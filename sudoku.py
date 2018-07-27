@@ -34,8 +34,8 @@ def getPosibleElements(arrayA,arrayB):
 	return common;
 
 def checkAndFillBlank(matrix,rest,line,column):
-	box_x = math.floor(column/3);
-	box_y = math.floor(line/3);
+	box_x = int(math.floor(column/3));
+	box_y = int(math.floor(line/3));
 	box_array = np.array(matrix[box_y*3:box_y*3+3,box_x*3:box_x*3+3]).copy();
 	box_array.shape = -1;
 	vertical_array = np.array(matrix[:,column]).copy();
