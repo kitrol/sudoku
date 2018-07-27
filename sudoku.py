@@ -3,6 +3,7 @@
 import numpy as np
 import math
 import random
+import operator
 
 # def randomArray(sorceArray):
 # 	tempArray=[1,2,3,4,5,6,7,8,9];
@@ -30,7 +31,6 @@ def getPosibleElements(arrayA,arrayB):
 	if len(common) < 3:
 		common.extend(rest[:(3-len(common))]);
 	random.shuffle(list(common));
-	print(common);
 	return common;
 
 def checkAndFillBlank(matrix,rest,line,column):
@@ -110,21 +110,44 @@ def initFinalBoard():
 			finalBoard[line:,5] = fitNum;
 	#  H	
 	#####################################
-	for line in range(6,9):
-		for column in range(0,3):
-			rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[line,0:6]);
-			rest = getPosibleElements(rest,finalBoard[0:3,5]);
-			fitNum = checkAndFillBlank(finalBoard,rest,line,column);
-			if fitNum>0:
-				finalBoard[line,column] = fitNum;
-	#  G
-	#####################################
+	for column in range(0,3):
+		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[6,0:6]);
+		fitNum = checkAndFillBlank(finalBoard,rest,6,column);
+		if fitNum>0:
+			finalBoard[6,column] = fitNum;
+	tempSet = finalBoard[6,0:6];
+	leftSet = removeElements(tempArray,tempSet);
+	if (operator.eq(leftSet,list(finalBoard[:3,6])))
+		or(operator.eq(leftSet,list(finalBoard[:3,7])))
+		or(operator.eq(leftSet,list(finalBoard[:3,7]))):
+		
+
+	for column in range(0,3):
+		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[7,0:6]);
+		rest = getPosibleElements(rest,finalBoard[8,3:6]);
+		fitNum = checkAndFillBlank(finalBoard,rest,7,column);
+		if fitNum>0:
+			finalBoard[7,column] = fitNum;
+	for column in range(0,3):
+		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[8,0:6]);
+		fitNum = checkAndFillBlank(finalBoard,rest,8,column);
+		if fitNum>0:
+			finalBoard[8,column] = fitNum;
 	# for line in range(6,9):
-	# 	for column in range(6,9):
+	# 	for column in range(0,3):
 	# 		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[line,0:6]);
+	# 		rest = getPosibleElements(rest,finalBoard[0:3,5]);
 	# 		fitNum = checkAndFillBlank(finalBoard,rest,line,column);
 	# 		if fitNum>0:
 	# 			finalBoard[line,column] = fitNum;
+	#  G
+	#####################################
+	for line in range(6,9):
+		for column in range(6,9):
+			rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[line,0:6]);
+			fitNum = checkAndFillBlank(finalBoard,rest,line,column);
+			if fitNum>0:
+				finalBoard[line,column] = fitNum;
 	#  I
 	#####################################
 	# for line in range(3,6):
