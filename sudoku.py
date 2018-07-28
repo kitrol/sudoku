@@ -46,6 +46,10 @@ def checkAndFillBlank(matrix,rest,line,column):
 		else:
 			return rest_item;
 	return 0;
+def isCanFill(matrix,num,line,column):
+	result = checkAndFillBlank(matrix,[num],line,column);
+	print("isCanFill line%d  column%d  old_num_is%d num%d result%s"%(line,column,matrix[line][column],num,str(result>0)));
+	return (result>0);
 
 def initFinalBoard():
 	# A   B   C
@@ -115,24 +119,48 @@ def initFinalBoard():
 		fitNum = checkAndFillBlank(finalBoard,rest,6,column);
 		if fitNum>0:
 			finalBoard[6,column] = fitNum;
+		else:
+			should_Num = rest[0];
+			for temp_column in xrange(0,column):
+				if isCanFill(finalBoard,should_Num,7,temp_column):
+					old_num = finalBoard[7,temp_column];
+					finalBoard[7,temp_column] = should_Num;
+					finalBoard[7,column] = old_num;
 	tempSet = finalBoard[6,0:6];
 	leftSet = removeElements(tempArray,tempSet);
-	if (operator.eq(leftSet,list(finalBoard[:3,6])))
-		or(operator.eq(leftSet,list(finalBoard[:3,7])))
-		or(operator.eq(leftSet,list(finalBoard[:3,7]))):
-		
-
+	while (operator.eq(leftSet,list(finalBoard[:3,6])))or(operator.eq(leftSet,list(finalBoard[:3,7])))or(operator.eq(leftSet,list(finalBoard[:3,7]))):
+		for column in range(0,3):
+			rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[6,0:6]);
+			fitNum = checkAndFillBlank(finalBoard,rest,6,column);
+			if fitNum>0:
+				finalBoard[6,column] = fitNum;
 	for column in range(0,3):
 		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[7,0:6]);
 		rest = getPosibleElements(rest,finalBoard[8,3:6]);
 		fitNum = checkAndFillBlank(finalBoard,rest,7,column);
 		if fitNum>0:
 			finalBoard[7,column] = fitNum;
+		else:
+			should_Num = rest[0];
+			for temp_column in range(0,column):
+				if isCanFill(finalBoard,should_Num,7,temp_column):
+					old_num = finalBoard[7,temp_column];
+					finalBoard[7,temp_column] = should_Num;
+					finalBoard[7,column] = old_num;
+			# for t in range(0,3):
+	rest = removeElements(removeElements(tempArray,finalBoard[6,0:3]),finalBoard[7,0:3]);
 	for column in range(0,3):
-		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[8,0:6]);
 		fitNum = checkAndFillBlank(finalBoard,rest,8,column);
 		if fitNum>0:
+			rest.remove(fitNum);
 			finalBoard[8,column] = fitNum;
+		else:
+			should_Num = rest[0];
+			for temp_column in range(0,column):
+				if isCanFill(finalBoard,should_Num,8,temp_column):
+					old_num = finalBoard[8,temp_column];
+					finalBoard[8,temp_column] = should_Num;
+					finalBoard[8,column] = old_num;
 	# for line in range(6,9):
 	# 	for column in range(0,3):
 	# 		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[line,0:6]);
@@ -142,29 +170,67 @@ def initFinalBoard():
 	# 			finalBoard[line,column] = fitNum;
 	#  G
 	#####################################
+	filled_set = [];
 	for line in range(6,9):
 		for column in range(6,9):
 			rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[line,0:6]);
+			rest = removeElements(rest,filled_set);
 			fitNum = checkAndFillBlank(finalBoard,rest,line,column);
 			if fitNum>0:
 				finalBoard[line,column] = fitNum;
+				filled_set.append(fitNum);
+			else:
+				if len(rest) <= 0:
+					print("Dead End!");
+					return initFinalBoard();
+				should_Num = rest[0];
+				print(rest);
+				print("line %d  column %d should_Num is %d"%(line,column,should_Num));
+				for temp_column in range(6,column):
+					if isCanFill(finalBoard,should_Num,line,temp_column):
+						old_num = finalBoard[line,temp_column];
+						finalBoard[line,temp_column] = should_Num;
+						finalBoard[line,column] = old_num;
 	#  I
 	#####################################
-	# for line in range(3,6):
-	# 	for column in range(0,3):
-	# 		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[line,0:6]);
+	filled_set = [];
+	for column in range(0,3):
+		rest = removeElements(removeElements(tempArray,finalBoard[0:3,column]),finalBoard[3:6,column]);
+		rest = removeElements(rest,filled_set);
+		for line in range(3,6):
+			fitNum = checkAndFillBlank(finalBoard,rest,line,column);
+			if fitNum>0:
+				finalBoard[line,column] = fitNum;
+				filled_set.append(fitNum);
+			else:
+				# if len(rest) <= 0:
+				# 	print("Dead End!");
+				# 	return initFinalBoard();
+				should_Num = rest[0];
+				for temp_line in range(3,line):
+					if isCanFill(finalBoard,should_Num,line,temp_line):
+						old_num = finalBoard[line,temp_line];
+						finalBoard[line,temp_line] = should_Num;
+						finalBoard[line,column] = old_num;
+	# #  D
+	# #####################################
+	# filled_set = [];
+	# for column in range(6,9):
+	# 	rest = removeElements(removeElements(tempArray,finalBoard[0:3,column]),finalBoard[3:6,column]);
+	# 	rest = removeElements(rest,filled_set);
+	# 	for line in range(3,6):
 	# 		fitNum = checkAndFillBlank(finalBoard,rest,line,column);
 	# 		if fitNum>0:
 	# 			finalBoard[line,column] = fitNum;
-	#  D
-	#####################################
-	# for line in range(3,6):
-	# 	for column in range(6,9):
-	# 		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[line,0:6]);
-	# 		fitNum = checkAndFillBlank(finalBoard,rest,line,column);
-	# 		if fitNum>0:
-	# 			finalBoard[line,column] = fitNum;
-	#  F
+	# 			filled_set.append(fitNum);
+	# 		else:
+	# 			should_Num = rest[0];
+	# 			for temp_line in range(3,line):
+	# 				if isCanFill(finalBoard,should_Num,line,temp_line):
+	# 					old_num = finalBoard[line,temp_line];
+	# 					finalBoard[line,temp_line] = should_Num;
+	# 					finalBoard[line,column] = old_num;
+	 # F
 	#####################################
 	print(finalBoard);
 	# print(type(finalBoard));
