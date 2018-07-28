@@ -5,11 +5,6 @@ import math
 import random
 import operator
 
-# def randomArray(sorceArray):
-# 	tempArray=[1,2,3,4,5,6,7,8,9];
-# 	random.shuffle(sorceArray);
-# 	# print(tempArray);
-# 	return tempArray; 
 	# if arrayA gets an element also in arrayB, remove it from arrayA
 def removeElements(arrayA,arrayB):
 	rest = (set(list(arrayA)).difference(set(list(arrayB))));
@@ -48,8 +43,31 @@ def checkAndFillBlank(matrix,rest,line,column):
 	return 0;
 def isCanFill(matrix,num,line,column):
 	result = checkAndFillBlank(matrix,[num],line,column);
-	print("isCanFill line%d  column%d  old_num_is%d num%d result%s"%(line,column,matrix[line][column],num,str(result>0)));
+	# print("isCanFill line%d  column%d  old_num_is%d num%d result%s"%(line,column,matrix[line][column],num,str(result>0)));
 	return (result>0);
+
+def checkLegal(matrix):
+	def isUnique(array,num):
+		counter = 0;
+		for item in array:
+			if num == item:
+				counter += 1;
+		return (counter<=1);
+	for line in range(0,9):
+		for column in range(0,9):
+			num = matrix[line,column];
+			if num==0:
+				continue;
+			box_x = int(math.floor(column/3));
+			box_y = int(math.floor(line/3));
+			box_array = np.array(matrix[box_y*3:box_y*3+3,box_x*3:box_x*3+3]).copy();
+			box_array.shape = -1;
+			vertical_array = np.array(matrix[:,column]).copy();
+			horizon_array = np.array(matrix[line,:]).copy();
+
+			if isUnique(box_array,num) and isUnique(vertical_array,num) and isUnique(horizon_array,num):
+				return True;
+	return False;
 
 def initFinalBoard():
 	# A   B   C
@@ -60,31 +78,24 @@ def initFinalBoard():
 	random.shuffle(tempArray);
 	finalBoard[0,:] = tempArray;
 
-	shuffle_1 =  tempArray[3:];
-	random.shuffle(shuffle_1);
-
-	temp_1 = tempArray[0:3];
-	temp_2 = shuffle_1[3:6];
-	temp_3 = removeElements(shuffle_1,temp_2);
-	random.shuffle(temp_2);
-	random.shuffle(temp_3);
-	finalBoard[1,0:3] = temp_2;
-	finalBoard[2,0:3] = temp_3;
-
-	# print(list(finalBoard[0,3:6]));
-	# print(list(temp_2));
-	rest = removeElements(removeElements(tempArray,temp_2),finalBoard[0,3:6]);
+	rest =  tempArray[3:];
 	random.shuffle(rest);
-
+	finalBoard[1,0:3] = rest[:3];
+	finalBoard[2,0:3] = rest[3:6];
+	# A
+	rest = removeElements(removeElements(tempArray,finalBoard[0,3:6]),finalBoard[1,0:3]);
+	rest = getPosibleElements(rest,finalBoard[2,0:3]);
 	finalBoard[1,3:6] = rest[:3];
 	rest = removeElements(removeElements(tempArray,finalBoard[0,3:6]),finalBoard[1,3:6]);
 	finalBoard[2,3:6] = rest[:3];
-
-	rest = removeElements(tempArray,finalBoard[1,:6]);
-	finalBoard[1,6:] = rest[:3];
-
-	rest = removeElements(tempArray,finalBoard[2,:6]);
-	finalBoard[2,6:] = rest[:3];
+	# if not checkLegal(finalBoard):
+	# 	print("isDeadEnd DEAD END!");
+	# 	return initFinalBoard();
+	# B
+	rest = removeElements(tempArray,finalBoard[1,0:6]);
+	finalBoard[1,6:9] = rest[:3];
+	rest = removeElements(tempArray,finalBoard[2,0:6]);
+	finalBoard[2,6:9] = rest[:3];
 	# A   B   C
 	###################################
 	rest = removeElements(tempArray,finalBoard[:3,3]);
@@ -112,7 +123,10 @@ def initFinalBoard():
 		fitNum = checkAndFillBlank(finalBoard,rest,line,5);
 		if fitNum>0:
 			finalBoard[line:,5] = fitNum;
-	#  H	
+	#  H
+	if not checkLegal(finalBoard):
+		print("isDeadEnd DEAD END ****H****!");
+		return initFinalBoard();
 	#####################################
 	for column in range(0,3):
 		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[6,0:6]);
@@ -126,8 +140,8 @@ def initFinalBoard():
 					old_num = finalBoard[7,temp_column];
 					finalBoard[7,temp_column] = should_Num;
 					finalBoard[7,column] = old_num;
-	tempSet = finalBoard[6,0:6];
-	leftSet = removeElements(tempArray,tempSet);
+
+	leftSet = removeElements(tempArray,finalBoard[6,0:6]);
 	while (operator.eq(leftSet,list(finalBoard[:3,6])))or(operator.eq(leftSet,list(finalBoard[:3,7])))or(operator.eq(leftSet,list(finalBoard[:3,7]))):
 		for column in range(0,3):
 			rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[6,0:6]);
@@ -161,80 +175,57 @@ def initFinalBoard():
 					old_num = finalBoard[8,temp_column];
 					finalBoard[8,temp_column] = should_Num;
 					finalBoard[8,column] = old_num;
-	# for line in range(6,9):
-	# 	for column in range(0,3):
-	# 		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[line,0:6]);
-	# 		rest = getPosibleElements(rest,finalBoard[0:3,5]);
-	# 		fitNum = checkAndFillBlank(finalBoard,rest,line,column);
-	# 		if fitNum>0:
-	# 			finalBoard[line,column] = fitNum;
+	if not checkLegal(finalBoard):
+		print("isDeadEnd DEAD END! ****G****");
+		return initFinalBoard();
 	#  G
 	#####################################
-	filled_set = [];
 	for line in range(6,9):
-		for column in range(6,9):
-			rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[line,0:6]);
-			rest = removeElements(rest,filled_set);
-			fitNum = checkAndFillBlank(finalBoard,rest,line,column);
-			if fitNum>0:
-				finalBoard[line,column] = fitNum;
-				filled_set.append(fitNum);
-			else:
-				if len(rest) <= 0:
-					print("Dead End!");
-					return initFinalBoard();
-				should_Num = rest[0];
-				print(rest);
-				print("line %d  column %d should_Num is %d"%(line,column,should_Num));
-				for temp_column in range(6,column):
-					if isCanFill(finalBoard,should_Num,line,temp_column):
-						old_num = finalBoard[line,temp_column];
-						finalBoard[line,temp_column] = should_Num;
-						finalBoard[line,column] = old_num;
+		rest = removeElements(tempArray,finalBoard[line,0:6]);
+		is_can = 0;
+		counter = 0;
+		# print(rest);
+		while (is_can == 0) and (counter < 50):
+			counter += 1;
+			random.shuffle(rest);
+			is_can = checkAndFillBlank(finalBoard,[rest[0]],line,6)and(checkAndFillBlank(finalBoard,[rest[1]],line,7))and(checkAndFillBlank(finalBoard,[rest[2]],line,8));
+		finalBoard[line,6:9]=rest[:3];
+	if not checkLegal(finalBoard):
+		print("isDeadEnd DEAD END! ****I****");
+		return initFinalBoard();
+
 	#  I
 	#####################################
-	filled_set = [];
 	for column in range(0,3):
-		rest = removeElements(removeElements(tempArray,finalBoard[0:3,column]),finalBoard[3:6,column]);
-		rest = removeElements(rest,filled_set);
-		for line in range(3,6):
-			fitNum = checkAndFillBlank(finalBoard,rest,line,column);
-			if fitNum>0:
-				finalBoard[line,column] = fitNum;
-				filled_set.append(fitNum);
-			else:
-				# if len(rest) <= 0:
-				# 	print("Dead End!");
-				# 	return initFinalBoard();
-				should_Num = rest[0];
-				for temp_line in range(3,line):
-					if isCanFill(finalBoard,should_Num,line,temp_line):
-						old_num = finalBoard[line,temp_line];
-						finalBoard[line,temp_line] = should_Num;
-						finalBoard[line,column] = old_num;
+		rest = removeElements(removeElements(tempArray,finalBoard[0:3,column]),finalBoard[6:9,column]);
+		is_can = 0;
+		counter = 0;
+		# print(rest);
+		while (is_can == 0) and (counter < 50):
+			counter += 1;
+			random.shuffle(rest);
+			is_can = checkAndFillBlank(finalBoard,[rest[0]],3,column)and(checkAndFillBlank(finalBoard,[rest[1]],4,column))and(checkAndFillBlank(finalBoard,[rest[2]],5,column));
+		finalBoard[3:6,column]=rest[:3];
+	if not checkLegal(finalBoard):
+		print("isDeadEnd DEAD END! ****D****");
+		# return initFinalBoard();
 	# #  D
 	# #####################################
-	# filled_set = [];
-	# for column in range(6,9):
-	# 	rest = removeElements(removeElements(tempArray,finalBoard[0:3,column]),finalBoard[3:6,column]);
-	# 	rest = removeElements(rest,filled_set);
-	# 	for line in range(3,6):
-	# 		fitNum = checkAndFillBlank(finalBoard,rest,line,column);
-	# 		if fitNum>0:
-	# 			finalBoard[line,column] = fitNum;
-	# 			filled_set.append(fitNum);
-	# 		else:
-	# 			should_Num = rest[0];
-	# 			for temp_line in range(3,line):
-	# 				if isCanFill(finalBoard,should_Num,line,temp_line):
-	# 					old_num = finalBoard[line,temp_line];
-	# 					finalBoard[line,temp_line] = should_Num;
-	# 					finalBoard[line,column] = old_num;
+	tempArray = list(tempArray);
+	for line in range(3,6):
+		for column in range(6,9):
+			fitNum = checkAndFillBlank(finalBoard,tempArray,line,column);
+			if fitNum == 0:
+				print("isDeadEnd DEAD END! ****F****");
+				return initFinalBoard();
+			finalBoard[line,column] = fitNum;		
 	 # F
 	#####################################
 	print(finalBoard);
-	# print(type(finalBoard));
-
-
 
 initFinalBoard();
+
+
+
+
+
