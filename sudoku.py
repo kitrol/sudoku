@@ -4,6 +4,10 @@ import numpy as np
 import math
 import random
 import operator
+import os
+import sys
+import time
+import platform
 
 	# if arrayA gets an element also in arrayB, remove it from arrayA
 def removeElements(arrayA,arrayB):
@@ -133,27 +137,29 @@ def initFinalBoard():
 		fitNum = checkAndFillBlank(finalBoard,rest,6,column);
 		if fitNum>0:
 			finalBoard[6,column] = fitNum;
-		else:
-			should_Num = rest[0];
-			for temp_column in xrange(0,column):
-				if isCanFill(finalBoard,should_Num,7,temp_column):
-					old_num = finalBoard[7,temp_column];
-					finalBoard[7,temp_column] = should_Num;
-					finalBoard[7,column] = old_num;
 
 	leftSet = removeElements(tempArray,finalBoard[6,0:6]);
+	counter = 0;
 	while (operator.eq(leftSet,list(finalBoard[:3,6])))or(operator.eq(leftSet,list(finalBoard[:3,7])))or(operator.eq(leftSet,list(finalBoard[:3,7]))):
+		if counter>20:
+			print("isDeadEnd DEAD END ****G****!");
+			return initFinalBoard();
 		for column in range(0,3):
 			rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[6,0:6]);
 			fitNum = checkAndFillBlank(finalBoard,rest,6,column);
 			if fitNum>0:
 				finalBoard[6,column] = fitNum;
+		counter += 1;
 	for column in range(0,3):
 		rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[7,0:6]);
 		rest = getPosibleElements(rest,finalBoard[8,3:6]);
 		fitNum = checkAndFillBlank(finalBoard,rest,7,column);
 		if fitNum>0:
 			finalBoard[7,column] = fitNum;
+		elif len(rest) == 0:
+			print("isDeadEnd DEAD END! ****G****");
+			print(finalBoard);
+			return initFinalBoard();
 		else:
 			should_Num = rest[0];
 			for temp_column in range(0,column):
@@ -185,7 +191,7 @@ def initFinalBoard():
 		is_can = 0;
 		counter = 0;
 		# print(rest);
-		while (is_can == 0) and (counter < 50):
+		while (is_can == 0) and (counter < 20):
 			counter += 1;
 			random.shuffle(rest);
 			is_can = checkAndFillBlank(finalBoard,[rest[0]],line,6)and(checkAndFillBlank(finalBoard,[rest[1]],line,7))and(checkAndFillBlank(finalBoard,[rest[2]],line,8));
@@ -206,9 +212,6 @@ def initFinalBoard():
 			random.shuffle(rest);
 			is_can = checkAndFillBlank(finalBoard,[rest[0]],3,column)and(checkAndFillBlank(finalBoard,[rest[1]],4,column))and(checkAndFillBlank(finalBoard,[rest[2]],5,column));
 		finalBoard[3:6,column]=rest[:3];
-	if not checkLegal(finalBoard):
-		print("isDeadEnd DEAD END! ****D****");
-		# return initFinalBoard();
 	# #  D
 	# #####################################
 	tempArray = list(tempArray);
@@ -221,11 +224,37 @@ def initFinalBoard():
 			finalBoard[line,column] = fitNum;		
 	 # F
 	#####################################
-	print(finalBoard);
-
-initFinalBoard();
+	return finalBoard;
 
 
 
+# initFinalBoard();
+def main(argv):
+	time0 = time.time();
+	print(argv[0]);
+	worktDir_ = os.path.dirname(argv[0]);
+	outputFile = worktDir_+"\\"+"finalBoard.txt";
+	if platform.system() == 'Darwin':
+		outputFile = worktDir_+"/"+"finalBoard.txt";
+	file = open(outputFile, "w+");
+	for counter in range(0,30):
+		print(counter);
+		file.write("Num.%d\n"%(counter));
+		file.write(str(initFinalBoard()));
+		file.write("\n\n");
+	file.close();
+	print((time.time()-time0));
+if __name__ == '__main__':
+   main(sys.argv)
 
 
+
+		# [[6 7 8 2 5 3 4 9 1]
+		#  [5 2 1 9 4 8 3 7 6]
+		#  [9 3 4 6 1 7 8 5 2]
+		#  [0 0 0 8 3 2 0 0 0]
+		#  [0 0 0 1 7 6 0 0 0]
+		#  [0 0 0 5 9 4 0 0 0]
+		#  [7 5 2 4 8 1 0 0 0]
+		#  [3 9 0 7 6 5 0 0 0]
+		#  [0 0 0 3 2 9 0 0 0]]
