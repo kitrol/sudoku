@@ -9,6 +9,7 @@ import sys
 import time
 import platform
 
+worktDir_="";
 	# if arrayA gets an element also in arrayB, remove it from arrayA
 def removeElements(arrayA,arrayB):
 	rest = (set(list(arrayA)).difference(set(list(arrayB))));
@@ -220,22 +221,31 @@ def initFinalBoard():
 			fitNum = checkAndFillBlank(finalBoard,tempArray,line,column);
 			if fitNum == 0:
 				print("isDeadEnd DEAD END! ****F****");
+				global worktDir_;
+				file = open(initFileNameInDir(worktDir_,"failedBoard.txt"), "a");
+				file.write(str(finalBoard)+"\n\n");
+				file.close();
 				return initFinalBoard();
 			finalBoard[line,column] = fitNum;		
 	 # F
 	#####################################
 	return finalBoard;
 
-
+def initFileNameInDir(dirName,fileName):
+	if platform.system() == 'Darwin':
+		return dirName+"/"+fileName;
+	return dirName+"\\"+fileName;
 
 # initFinalBoard();
 def main(argv):
 	time0 = time.time();
 	print(argv[0]);
+	global worktDir_;
 	worktDir_ = os.path.dirname(argv[0]);
-	outputFile = worktDir_+"\\"+"finalBoard.txt";
-	if platform.system() == 'Darwin':
-		outputFile = worktDir_+"/"+"finalBoard.txt";
+	# outputFile = worktDir_+"\\"+"finalBoard.txt";
+	# if platform.system() == 'Darwin':
+	# 	outputFile = worktDir_+"/"+"finalBoard.txt";
+	outputFile = initFileNameInDir(worktDir_,"finalBoard.txt");
 	file = open(outputFile, "w+");
 	for counter in range(0,30):
 		print(counter);
@@ -246,15 +256,3 @@ def main(argv):
 	print((time.time()-time0));
 if __name__ == '__main__':
    main(sys.argv)
-
-
-
-		# [[6 7 8 2 5 3 4 9 1]
-		#  [5 2 1 9 4 8 3 7 6]
-		#  [9 3 4 6 1 7 8 5 2]
-		#  [0 0 0 8 3 2 0 0 0]
-		#  [0 0 0 1 7 6 0 0 0]
-		#  [0 0 0 5 9 4 0 0 0]
-		#  [7 5 2 4 8 1 0 0 0]
-		#  [3 9 0 7 6 5 0 0 0]
-		#  [0 0 0 3 2 9 0 0 0]]
