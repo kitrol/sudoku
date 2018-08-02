@@ -9,6 +9,11 @@ import sys
 import time
 import platform
 
+isPrintEnable = False;
+def localPrint(argv):
+	if isPrintEnable:
+		print(argv);
+
 worktDir_="";
 	# if arrayA gets an element also in arrayB, remove it from arrayA
 def removeElements(arrayA,arrayB):
@@ -130,7 +135,7 @@ def initFinalBoard():
 			finalBoard[line:,5] = fitNum;
 	#  H
 	if not checkLegal(finalBoard):
-		print("isDeadEnd DEAD END ****H****!");
+		localPrint("isDeadEnd DEAD END ****H****!");
 		return initFinalBoard();
 	#####################################
 	for column in range(0,3):
@@ -143,7 +148,7 @@ def initFinalBoard():
 	counter = 0;
 	while (operator.eq(leftSet,list(finalBoard[:3,6])))or(operator.eq(leftSet,list(finalBoard[:3,7])))or(operator.eq(leftSet,list(finalBoard[:3,7]))):
 		if counter>20:
-			print("isDeadEnd DEAD END ****G****!");
+			localPrint("isDeadEnd DEAD END ****G****!");
 			return initFinalBoard();
 		for column in range(0,3):
 			rest = removeElements(removeElements(tempArray,finalBoard[:,column]),finalBoard[6,0:6]);
@@ -158,8 +163,8 @@ def initFinalBoard():
 		if fitNum>0:
 			finalBoard[7,column] = fitNum;
 		elif len(rest) == 0:
-			print("isDeadEnd DEAD END! ****G****");
-			print(finalBoard);
+			localPrint("isDeadEnd DEAD END! ****G****");
+			localPrint(finalBoard);
 			return initFinalBoard();
 		else:
 			should_Num = rest[0];
@@ -183,7 +188,7 @@ def initFinalBoard():
 					finalBoard[8,temp_column] = should_Num;
 					finalBoard[8,column] = old_num;
 	if not checkLegal(finalBoard):
-		print("isDeadEnd DEAD END! ****G****");
+		localPrint("isDeadEnd DEAD END! ****G****");
 		return initFinalBoard();
 	#  G
 	#####################################
@@ -198,7 +203,7 @@ def initFinalBoard():
 			is_can = checkAndFillBlank(finalBoard,[rest[0]],line,6)and(checkAndFillBlank(finalBoard,[rest[1]],line,7))and(checkAndFillBlank(finalBoard,[rest[2]],line,8));
 		finalBoard[line,6:9]=rest[:3];
 	if not checkLegal(finalBoard):
-		print("isDeadEnd DEAD END! ****I****");
+		localPrint("isDeadEnd DEAD END! ****I****");
 		return initFinalBoard();
 
 	#  I
@@ -220,11 +225,14 @@ def initFinalBoard():
 		for column in range(6,9):
 			fitNum = checkAndFillBlank(finalBoard,tempArray,line,column);
 			if fitNum == 0:
-				print("isDeadEnd DEAD END! ****F****");
+				localPrint("isDeadEnd DEAD END! ****F****");
 				global worktDir_;
-				file = open(initFileNameInDir(worktDir_,"failedBoard.txt"), "a");
-				file.write(str(finalBoard)+"\n\n");
-				file.close();
+				try:
+				    file = open(initFileNameInDir(worktDir_,"failedBoard.txt"), "a");
+				    file.write(str(finalBoard)+"\n\n");
+				    file.close();
+				except IOError:
+					pass;
 				return initFinalBoard();
 			finalBoard[line,column] = fitNum;		
 	 # F
