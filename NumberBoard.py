@@ -20,8 +20,8 @@ def initFileNameInDir(dirName,fileName):
 	return dirName+"\\"+fileName;
 	
 fontFile = None;
-
-class NumberBoard(MD.MouseEventDelegate):
+		
+class NumberBoard(MD.MouseEventDelegate,object):
 	hardness = ((41,50),(51,53),(54,58),(59,60));
 	normal_line_size = 2;
 	bold_line_size = 4;
@@ -112,7 +112,7 @@ class NumberBoard(MD.MouseEventDelegate):
 
 		# display.fill(SELECT_COLOR,(self.start_X, self.start_Y+line*self.offset,self.offset*9,self.offset));
 		# display.fill(SELECT_COLOR,(self.start_X+column*self.offset, self.start_Y,self.offset,self.offset*9));
-		if self.testBoard_[line][column]:
+		if self.testBoard_[line][column] > 0:
 			return False;
 		if self.testBoard_[line][column]==0:
 			self.selected_coordinate = (line,column);
@@ -159,8 +159,8 @@ class NumberBoard(MD.MouseEventDelegate):
 		elif (self.STARTPOS[0]-self.start_X)>self.offset*9 or (self.STARTPOS[0]-self.start_X)<=0 or (self.STARTPOS[1]-self.start_Y)>self.offset*9 or (self.STARTPOS[1]-self.start_Y)<=0:
 			return False;
 		
-		column = math.floor((self.STARTPOS[0]-self.start_X)/self.offset);
-		line = math.floor((self.STARTPOS[1]-self.start_Y)/self.offset);
+		column = int(math.floor((self.STARTPOS[0]-self.start_X)/self.offset));
+		line = int(math.floor((self.STARTPOS[1]-self.start_Y)/self.offset));
 		self.onSelectTile(line,column);
 
 
@@ -220,7 +220,7 @@ class SideBoard(MD.MouseEventDelegate):
 
 		column = math.floor((self.STARTPOS[0]-self.start_X)/self.offset);
 		line = math.floor((self.STARTPOS[1]-self.start_Y)/self.offset);
-		num = (line*3+column+1);
+		num = int(line*3+column+1);
 		
 		broadcaster = GB.GameEventBroadcaster.getControler();
 		broadcaster.envokeEvent("GAME_EVENT_INPUT_NUM",num);

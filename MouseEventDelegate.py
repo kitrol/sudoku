@@ -70,7 +70,7 @@ class MouseEventsDistributer():
 		self.removeFailureDelegates();	
 
 
-class MouseEventDelegate():
+class MouseEventDelegate(object):
 	"""docstring for MouseEventDelegate"""
 	def __init__(self):
 		self.LEFT_CLICK = False;
