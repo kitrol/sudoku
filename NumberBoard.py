@@ -9,18 +9,20 @@ import random
 import math
 import MouseEventDelegate as MD
 import GameEventBroadcaster as GB
+import TimeEventController as TC
+import PixelProgressBar as PPG
 
 BG_COLOR = (244,244,244,125);
 DARK_COLOR = (220,230,235,125);
 SELECT_COLOR = (200,200,200,125);
+ONANIMATION = False;
 
 def initFileNameInDir(dirName,fileName):
 	if platform.system() == 'Darwin':
 		return dirName+"/"+fileName;
 	return dirName+"\\"+fileName;
 	
-fontFile = None;
-		
+	
 class NumberBoard(MD.MouseEventDelegate,object):
 	hardness = ((41,50),(51,53),(54,58),(59,60));
 	normal_line_size = 2;
@@ -41,6 +43,8 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		self.offset = 0;
 		self.selected_coordinate = (-1,-1);
 		self.createEmptyArray();
+		self.numberSurface_ = None;
+		self.progressBar_ = None;
 		mouseControler = MD.MouseEventsDistributer.getControler();
 		mouseControler.regeistDelegate(self);
 		broadcaster = GB.GameEventBroadcaster.getControler();
@@ -70,7 +74,7 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		self.tryBoard_ = np.array(self.testBoard_);
 		return emptyNumArray;
 
-	def drawBoard(self,start_X,start_Y,offset):
+	def drawBoard(self,start_X,start_Y,offset,selected_line=-1,selected_column=-1):
 		display = self.display_;
 		BLACK = NumberBoard.BLACK;
 		normal_line_size = NumberBoard.normal_line_size;
@@ -78,69 +82,126 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		self.start_X = start_X;
 		self.start_Y = start_Y;
 		self.offset = offset;
+		selected_num = 0;
 		global fontFile;
 		fontFile = initFileNameInDir(initFileNameInDir(self.worktDir_,"fonts"),"Bank Gothic Medium BT.TTF");
-
+		self.numberSurface_ = pg.Surface((offset*9,offset*9));
+		self.numberSurface_.fill((244,244,244,125));
 		for column in range(4,7):
 			global DARK_COLOR;
-			display.fill(DARK_COLOR,(start_X, start_Y+(column-1)*offset,offset*9,offset));
-			display.fill(DARK_COLOR,(start_X+(column-1)*offset, start_Y,offset,offset*9));
+			self.numberSurface_.fill(DARK_COLOR,(0, (column-1)*offset,offset*9,offset));
+			self.numberSurface_.fill(DARK_COLOR,((column-1)*offset, 0,offset,offset*9));
 
+		if selected_line >=0 and selected_column>=0:
+			selected_num = self.tryBoard_[selected_line,selected_column];
+			self.numberSurface_.fill(SELECT_COLOR,(0, selected_line*self.offset,self.offset*9,self.offset));
+			self.numberSurface_.fill(SELECT_COLOR,(selected_column*self.offset, 0,self.offset,self.offset*9));
+			# if self.testBoard_[selected_line][selected_column] > 0:
+			# 	return False;
+			if self.testBoard_[selected_line][selected_column]==0:
+				self.selected_coordinate = (selected_line,selected_column);
+		display.blit(self.numberSurface_,(start_X,start_Y));
+		# Draw board
 		for column in range(1,11):
 			lineSize = normal_line_size;
 			if column%3==1:
 				lineSize = bold_line_size;			
 			pg.draw.line(display, BLACK, (start_X, start_Y+(column-1)*offset), (start_X+9*offset, start_Y+(column-1)*offset), lineSize);
 			pg.draw.line(display, BLACK, (start_X+(column-1)*offset, start_Y), (start_X+(column-1)*offset, start_Y+9*offset), lineSize);
-		
+		# draw lines
 		fontObj = pg.font.Font(fontFile, 24);
+		color = (100,100,100);
 		for line in range(0,9):
 			for column in range(0,9):
-				num = self.testBoard_[line,column];
+				num = self.tryBoard_[line,column];
 				if num > 0:
-					textSurfaceObj = fontObj.render(str(num), True, (0,0,0));
+					# make the default num showed different with that user input
+					if self.testBoard_[line,column] != num:
+						color = (150,80,80);
+					else:
+						color = (15,15,15);
+					isBold = False;
+					# something like high light the same number on board
+					if selected_num >0 and self.tryBoard_[line,column]==selected_num:
+						fontObj = pg.font.Font(fontFile, 26);
+						isBold = True;
+					else:
+						fontObj = pg.font.Font(fontFile, 24);
+					fontObj.set_bold(isBold);
+					textSurfaceObj = fontObj.render(str(num), True, color);
 					textRectObj = textSurfaceObj.get_rect();
+
 					textRectObj.center = (start_X+column*offset+offset/2, start_Y+line*offset+offset/2+2);
 					display.blit(textSurfaceObj,textRectObj);
-	# delegate got from parent MouseEventDelegate
-	def onSelectTile(self,line,column):
-		global DARK_COLOR;
-		display = self.display_;
-		# for column_1 in range(4,7):
-		# 	display.fill(DARK_COLOR,(self.start_X, self.start_Y+(column_1-1)*self.offset,self.offset*9,self.offset));
-		# 	display.fill(DARK_COLOR,(self.start_X+(column_1-1)*self.offset, self.start_Y,self.offset,self.offset*9));
+		# add progress bar
+		# width,height,bgColor,barColor,percent,
+		count = self.getFilledNums();
+		self.progressBar_ = PPG.PixelProgressBar(270,10,(150,150,150),(0,0,0),count/81);
+		self.progressBar_.drawProgressBar(display,60,350);
 
-		# display.fill(SELECT_COLOR,(self.start_X, self.start_Y+line*self.offset,self.offset*9,self.offset));
-		# display.fill(SELECT_COLOR,(self.start_X+column*self.offset, self.start_Y,self.offset,self.offset*9));
-		if self.testBoard_[line][column] > 0:
-			return False;
-		if self.testBoard_[line][column]==0:
-			self.selected_coordinate = (line,column);
-			print("onSelectTile  "+str(self.selected_coordinate));
+	def getFilledNums(self):
+		tempArray = self.tryBoard_.copy();
+		tempArray.shape = -1;
+		count = 0;
+		for x in tempArray:
+			if x != 0:
+				count+=1;
+		return count;
 
 	def onUpdateNum(self,data):
-		print("NumberBoard::onUpdateNum "+str(data));
 		if self.selected_coordinate == (-1,-1):
 			return;
 		line = self.selected_coordinate[0];
 		column = self.selected_coordinate[1];
-		if self.testBoard_[line][column]:
-
-			self.selected_coordinate == (-1,-1);
+		if self.testBoard_[line,column] > 0:
 			return;
+		if int(data) == self.finalBoard_[line,column]:
+			# FILL IN A RIGHT NUMBER
+			self.tryBoard_[line,column] = int(data);
+			self.checkFinish();
+			self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
+			count = self.getFilledNums();
+			self.progressBar_.setPercent(count/81);
+			self.checkIsNumFinish(int(data));
 		else:
-			self.tryBoard_[line][column] = int(data);
-			global fontFile;
-			start_X = self.start_X;
-			start_Y = self.start_Y;
-			offset = self.offset;
-			fontObj = pg.font.Font(fontFile, 24);
-			textSurfaceObj = fontObj.render(str(data), True, (255,0,0));
-			textRectObj = textSurfaceObj.get_rect();
-			textRectObj.center = (start_X+column*offset+offset/2, start_Y+line*offset+offset/2+2);
-			self.display_.blit(textSurfaceObj,textRectObj);
+			# FILL IN A WRONG NUMBER
+			self.drawGuessWrong(line,column,int(data));
+	def restStatus(self,data):
+		global ONANIMATION;
+		ONANIMATION = False;
+		self.drawBoard(self.start_X,self.start_Y,self.offset,data[0],data[1]);
 
-
+	def drawGuessWrong(self,line,column,num):
+		global fontFile;
+		fontObj = pg.font.Font(fontFile, 24);
+		textSurfaceObj = fontObj.render(str(num), True, (255,0,0));
+		textRectObj = textSurfaceObj.get_rect();
+		textRectObj.center = (self.start_X+column*self.offset+self.offset/2, self.start_Y+line*self.offset+self.offset/2+2);
+		self.display_.blit(textSurfaceObj,textRectObj);
+		global ONANIMATION;
+		ONANIMATION = True;
+		timeEventController = TC.TimeEventController.getControler();
+		# eventType,delayTime,target,callbackFunc
+		callbackEvent = TC.TimeEvent("TET_Callback",2.0,self,self.restStatus,callbackData=(line,column));
+		timeEventController.regeistEvent(callbackEvent);
+		
+	def checkIsNumFinish(self,targetNum):
+		tempArray = self.tryBoard_.copy();
+		tempArray.shape = -1;
+		counter = 0;
+		for num in tempArray:
+			if num == targetNum:
+				counter += 1;
+		print("checkIsNumFinish targetNum %d cnt %d"%(targetNum,counter));
+		if counter>=9:
+			broadcaster = GB.GameEventBroadcaster.getControler();
+			broadcaster.envokeEvent("GAME_EVENT_NUM_FULL",targetNum);
+			
+	def checkFinish(self):
+		for line in range(0,9):
+			if 0 in self.tryBoard_[line]:
+				return False;
+		return True;
 	def mouseLeftClickStart(self,mouse):
 		pass;
 	def mouseMidClickStart(self,mouse):
@@ -156,12 +217,13 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		endPos = mouse.get_pos();
 		if math.sqrt((endPos[1]-self.STARTPOS[1])**2+(endPos[0]-self.STARTPOS[0])**2)> 20:
 			return False;
-		elif (self.STARTPOS[0]-self.start_X)>self.offset*9 or (self.STARTPOS[0]-self.start_X)<=0 or (self.STARTPOS[1]-self.start_Y)>self.offset*9 or (self.STARTPOS[1]-self.start_Y)<=0:
+		elif (self.STARTPOS[0]-self.start_X)>=self.offset*9 or (self.STARTPOS[0]-self.start_X)<=0 or (self.STARTPOS[1]-self.start_Y)>=self.offset*9 or (self.STARTPOS[1]-self.start_Y)<=0:
 			return False;
-		
+		if ONANIMATION:
+			return False;
 		column = int(math.floor((self.STARTPOS[0]-self.start_X)/self.offset));
 		line = int(math.floor((self.STARTPOS[1]-self.start_Y)/self.offset));
-		self.onSelectTile(line,column);
+		self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
 
 
 class SideBoard(MD.MouseEventDelegate):
@@ -176,16 +238,21 @@ class SideBoard(MD.MouseEventDelegate):
 		self.start_X = 0;
 		self.start_Y = 0;
 		self.offset = 0;
+		self.finishedNums_ = [];
 		mouseControler = MD.MouseEventsDistributer.getControler();
 		mouseControler.regeistDelegate(self);
+		broadcaster = GB.GameEventBroadcaster.getControler();
+		broadcaster.regeistMessage(GB.BoundMessage("GAME_EVENT_NUM_FULL",self,self.deleteFullNum));
 
 	def drwaSideBoard(self,start_X,start_Y,offset):
-		global fontFile;
+		fontObj = pg.font.Font(fontFile, 25);
 		BLACK = self.BLACK;
 		self.start_X = start_X;
 		self.start_Y = start_Y;
 		self.offset = offset;
 		display = self.display_;
+		display.fill(DARK_COLOR,(start_X, start_Y,offset*3,offset*3));
+
 		for column in range(1,5):
 			lineSize = SideBoard.normal_line_size;
 			if column%3==1:
@@ -196,7 +263,7 @@ class SideBoard(MD.MouseEventDelegate):
 		for line in range(0,3):
 			for column in range(0,3):
 				num = line*3+column+1;
-				if num > 0:
+				if num not in self.finishedNums_:
 					textSurfaceObj = fontObj.render(str(num), True, (0,0,0));
 					textRectObj = textSurfaceObj.get_rect();
 					textRectObj.center = (start_X+column*offset+offset/2, start_Y+line*offset+offset/2+2);
@@ -221,6 +288,15 @@ class SideBoard(MD.MouseEventDelegate):
 		column = math.floor((self.STARTPOS[0]-self.start_X)/self.offset);
 		line = math.floor((self.STARTPOS[1]-self.start_Y)/self.offset);
 		num = int(line*3+column+1);
-		
+		if num in self.finishedNums_:
+			# have filled all this num
+			return False;
 		broadcaster = GB.GameEventBroadcaster.getControler();
 		broadcaster.envokeEvent("GAME_EVENT_INPUT_NUM",num);
+
+	def deleteFullNum(self,targetNum):
+		self.finishedNums_.append(int(targetNum));
+		start_X	=	self.start_X;
+		start_Y = self.start_Y;
+		offset = self.offset;
+		self.drwaSideBoard(start_X,start_Y,offset);

@@ -11,6 +11,7 @@ import math
 GAME_EVENT = (
 	"GAME_EVENT_INPUT_NUM",
 	"GAME_EVENT_DEL_NUM",
+	"GAME_EVENT_NUM_FULL",
 	)
 class BoundMessage:
 	def __init__(self,messageType,target,func):

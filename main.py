@@ -10,6 +10,7 @@ import random
 import math
 import NumberBoard;
 import MouseEventDelegate as MD
+import TimeEventController as TC
 
 LEFT_CLICK = False;
 STARTPOS = None;
@@ -25,10 +26,11 @@ def main(argv):
 	pg.display.set_caption("Sudoku Challange");
 	display.fill((244,244,244,125));
 	fpsClock = pg.time.Clock();
-	mouseControler = MD.MouseEventsDistributer.getControler();
 
+	mouseControler = MD.MouseEventsDistributer.getControler();
+	timeEventController = TC.TimeEventController.getControler();
 	################ draw board
-	board = NumberBoard.NumberBoard(display,finalBoard,2,worktDir_);
+	board = NumberBoard.NumberBoard(display,finalBoard,0,worktDir_);
 	board.drawBoard(60,60,30);
 	mouseControler.regeistDelegate(board);
 	# print(hasattr(board,"drawBoard"));
@@ -38,7 +40,7 @@ def main(argv):
 
 	while True:
 		keys = pg.key.get_pressed();
-		if (keys[310] and keys[113]) or (keys[306] and keys[113]):# 
+		if (keys[310] and keys[113]) or (keys[306] and keys[113]):#
 			pg.quit();
 			sys.exit();
 		for event in pg.event.get():
@@ -47,6 +49,9 @@ def main(argv):
 				sys.exit();
 			elif (event.type == pg.MOUSEBUTTONDOWN) or (event.type == pg.MOUSEMOTION) or (event.type == pg.MOUSEBUTTONUP):
 				mouseControler.dealMouseEvents(event);
+			elif event.type == pg.USEREVENT:
+				pass;
+				timeEventController.tryTriggerEvent();
 		pg.display.update();
 		fpsClock.tick(60);
 
