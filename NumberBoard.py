@@ -136,7 +136,7 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		# add progress bar
 		# width,height,bgColor,barColor,percent,
 		count = self.getFilledNums();
-		self.progressBar_ = PPG.PixelProgressBar(270,10,(150,150,150),(0,0,0),count/81);
+		self.progressBar_ = PPG.PixelProgressBar(270,10,(150,150,150),(0,0,0),float(count)/81);
 		self.progressBar_.drawProgressBar(display,60,350);
 
 	def getFilledNums(self):
