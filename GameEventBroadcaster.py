@@ -12,6 +12,7 @@ GAME_EVENT = (
 	"GAME_EVENT_INPUT_NUM",
 	"GAME_EVENT_DEL_NUM",
 	"GAME_EVENT_NUM_FULL",
+	"GAME_EVENT_LEVEL_ACCOMPLISH",
 	)
 class BoundMessage:
 	def __init__(self,messageType,target,func):

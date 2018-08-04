@@ -158,11 +158,11 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		if int(data) == self.finalBoard_[line,column]:
 			# FILL IN A RIGHT NUMBER
 			self.tryBoard_[line,column] = int(data);
-			self.checkFinish();
 			self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
 			count = self.getFilledNums();
 			self.progressBar_.setPercent(count/81);
 			self.checkIsNumFinish(int(data));
+			self.checkFinish();
 		else:
 			# FILL IN A WRONG NUMBER
 			self.drawGuessWrong(line,column,int(data));
@@ -201,7 +201,9 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		for line in range(0,9):
 			if 0 in self.tryBoard_[line]:
 				return False;
-		return True;
+		# post notification when finished 
+		GB.GameEventBroadcaster.getControler().envokeEvent("GAME_EVENT_LEVEL_ACCOMPLISH",{"level":1,"timeCost":100});
+
 	def mouseLeftClickStart(self,mouse):
 		pass;
 	def mouseMidClickStart(self,mouse):
