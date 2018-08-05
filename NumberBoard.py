@@ -212,16 +212,17 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		pass;
 
 	def mouseLeftClickEnd(self,mouse):
-		endPos = mouse.get_pos();
-		if math.sqrt((endPos[1]-self.STARTPOS[1])**2+(endPos[0]-self.STARTPOS[0])**2)> 20:
-			return False;
-		elif (self.STARTPOS[0]-self.start_X)>=self.offset*9 or (self.STARTPOS[0]-self.start_X)<=0 or (self.STARTPOS[1]-self.start_Y)>=self.offset*9 or (self.STARTPOS[1]-self.start_Y)<=0:
-			return False;
-		if ONANIMATION:
-			return False;
-		column = int(math.floor((self.STARTPOS[0]-self.start_X)/self.offset));
-		line = int(math.floor((self.STARTPOS[1]-self.start_Y)/self.offset));
-		self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
+		return False;
+		# endPos = mouse.get_pos();
+		# if math.sqrt((endPos[1]-self.STARTPOS[1])**2+(endPos[0]-self.STARTPOS[0])**2)> 20:
+		# 	return False;
+		# elif (self.STARTPOS[0]-self.start_X)>=self.offset*9 or (self.STARTPOS[0]-self.start_X)<=0 or (self.STARTPOS[1]-self.start_Y)>=self.offset*9 or (self.STARTPOS[1]-self.start_Y)<=0:
+		# 	return False;
+		# if ONANIMATION:
+		# 	return False;
+		# column = int(math.floor((self.STARTPOS[0]-self.start_X)/self.offset));
+		# line = int(math.floor((self.STARTPOS[1]-self.start_Y)/self.offset));
+		# self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
 
 
 class SideBoard(MD.MouseEventDelegate):

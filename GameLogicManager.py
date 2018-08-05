@@ -9,7 +9,7 @@ import GameEventBroadcaster as GB
 import sudoku
 import Common
 
-import PopupBase as PB
+import FinishLevelPopup as FLP
 
 class GameLogicManager(object):
 	Instance_ = None;
@@ -31,6 +31,7 @@ class GameLogicManager(object):
 		display = pg.display.set_mode(Common.SCREEN_SIZE);
 		pg.display.set_caption("Sudoku Challange");
 		display.fill((244,244,244,125));
+		Common.setDisplay(display);
 
 	def initStaticLayout(self):
 		finalBoard = sudoku.initFinalBoard();
@@ -76,6 +77,6 @@ class GameLogicManager(object):
 		# show finish popup with back and play again two btns.
 		# fileName = Common.initFileNameInDir(Common.initFileNameInDir(Common.WORKDIR,"images"),"finishLevel.png");
 		# finishBg = pg.image.load(fileName);
-		newPopup = PB.PopupBase();
+		newPopup = FLP.FinishLevelPopup();
 		newPopup.popupShpw();
 		pass;
