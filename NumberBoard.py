@@ -1,26 +1,24 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 import numpy as np
-import os
-import sys
 import pygame as pg
-import platform
 import random
 import math
 import MouseEventDelegate as MD
 import GameEventBroadcaster as GB
 import TimeEventController as TC
 import PixelProgressBar as PPG
+import Common
 
 BG_COLOR = (244,244,244,125);
 DARK_COLOR = (220,230,235,125);
 SELECT_COLOR = (200,200,200,125);
 ONANIMATION = False;
 
-def initFileNameInDir(dirName,fileName):
-	if platform.system() == 'Darwin':
-		return dirName+"/"+fileName;
-	return dirName+"\\"+fileName;
+# def initFileNameInDir(dirName,fileName):
+# 	if platform.system() == 'Darwin':
+# 		return dirName+"/"+fileName;
+# 	return dirName+"\\"+fileName;
 	
 	
 class NumberBoard(MD.MouseEventDelegate,object):
@@ -28,16 +26,14 @@ class NumberBoard(MD.MouseEventDelegate,object):
 	normal_line_size = 2;
 	bold_line_size = 4;
 	BLACK = (0,0,0);
-	worktDir_ = None;
 
-	def __init__(self, display, finalBoard, level,worktDir):
+	def __init__(self, display, finalBoard, level):
 		super(MD.MouseEventDelegate, self).__init__();
 		self.display_ = display;
 		self.finalBoard_ = finalBoard;
 		self.testBoard_ = np.array(finalBoard);
 		self.tryBoard_ = None;
 		self.level_ = level;
-		self.worktDir_ = worktDir;
 		self.start_X = 0;
 		self.start_Y = 0;
 		self.offset = 0;
@@ -84,7 +80,7 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		self.offset = offset;
 		selected_num = 0;
 		global fontFile;
-		fontFile = initFileNameInDir(initFileNameInDir(self.worktDir_,"fonts"),"Bank Gothic Medium BT.TTF");
+		fontFile = Common.initFileNameInDir(Common.initFileNameInDir(Common.WORKDIR,"fonts"),"Bank Gothic Medium BT.TTF");
 		self.numberSurface_ = pg.Surface((offset*9,offset*9));
 		self.numberSurface_.fill((244,244,244,125));
 		for column in range(4,7):
@@ -232,11 +228,9 @@ class SideBoard(MD.MouseEventDelegate):
 	normal_line_size =2;
 	bold_line_size = 4;
 	BLACK = (0,0,0);
-	worktDir_ = None;
-	def __init__(self, display,worktDir):
+	def __init__(self, display):
 		super(MD.MouseEventDelegate, self).__init__();
 		self.display_ = display;
-		self.worktDir_ = worktDir;
 		self.start_X = 0;
 		self.start_Y = 0;
 		self.offset = 0;

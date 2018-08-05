@@ -7,12 +7,14 @@ import MouseEventDelegate as MD
 import TimeEventController as TC
 import GameEventBroadcaster as GB
 import sudoku
+import Common
+
+import PopupBase as PB
 
 class GameLogicManager(object):
 	Instance_ = None;
 	def __init__(self):
 		super(GameLogicManager, self).__init__()
-		self.worktDir_ =None;
 		broadcaster = GB.GameEventBroadcaster.getControler();
 		broadcaster.regeistMessage(GB.BoundMessage("GAME_EVENT_LEVEL_ACCOMPLISH",self,self.onLevelAccomplished));
 
@@ -24,27 +26,31 @@ class GameLogicManager(object):
 		else:
 			return GameLogicManager.Instance_;
 
-	def initEnv(self,worktDir):
+	def initEnv(self):
 		pg.init();
-		display = pg.display.set_mode((600,400));
+		display = pg.display.set_mode(Common.SCREEN_SIZE);
 		pg.display.set_caption("Sudoku Challange");
 		display.fill((244,244,244,125));
-		self.worktDir_ = worktDir;
 
 	def initStaticLayout(self):
 		finalBoard = sudoku.initFinalBoard();
 		print(str(finalBoard));
 		################ draw board
 		display = pg.display.get_surface();
-		board = NB.NumberBoard(display,finalBoard,0,self.worktDir_);
+		level = 0;# level = 0 1 2 3
+		board = NB.NumberBoard(display,finalBoard,level);
 		board.drawBoard(60,60,30);
 		mouseControler = MD.MouseEventsDistributer.getControler();
 		timeEventController = TC.TimeEventController.getControler();
 		mouseControler.regeistDelegate(board);
 		# print(hasattr(board,"drawBoard"));
-		sideBoard = NB.SideBoard(display,self.worktDir_);
+		sideBoard = NB.SideBoard(display);
 		sideBoard.drwaSideBoard(400,60,30);
-	    ##############
+		##############
+
+		##########TEST##########
+		self.onLevelAccomplished({'a':123,'b':456});
+		##########TEST##########
 
 	def startMainLoop(self):
 		fpsClock = pg.time.Clock();
@@ -68,8 +74,8 @@ class GameLogicManager(object):
 	def onLevelAccomplished(self,data):
 		print("onLevelAccomplished   "+str(data));
 		# show finish popup with back and play again two btns.
-		fileName = NB.initFileNameInDir(NB.initFileNameInDir(self.worktDir_,"images"),"finishLevel.png");
-		finishBg = pg.image.load(fileName);
-		display = pg.display.get_surface();
-		display.blit(finishBg,(0,0));
+		# fileName = Common.initFileNameInDir(Common.initFileNameInDir(Common.WORKDIR,"images"),"finishLevel.png");
+		# finishBg = pg.image.load(fileName);
+		newPopup = PB.PopupBase();
+		newPopup.popupShpw();
 		pass;

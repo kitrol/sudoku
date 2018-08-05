@@ -8,13 +8,13 @@ import os
 import sys
 import time
 import platform
+import Common
 
 isPrintEnable = False;
 def localPrint(argv):
 	if isPrintEnable:
 		print(argv);
 
-worktDir_="";
 	# if arrayA gets an element also in arrayB, remove it from arrayA
 def removeElements(arrayA,arrayB):
 	rest = (set(list(arrayA)).difference(set(list(arrayB))));
@@ -226,9 +226,8 @@ def initFinalBoard():
 			fitNum = checkAndFillBlank(finalBoard,tempArray,line,column);
 			if fitNum == 0:
 				localPrint("isDeadEnd DEAD END! ****F****");
-				global worktDir_;
 				try:
-				    file = open(initFileNameInDir(worktDir_,"failedBoard.txt"), "a");
+				    file = open(Common.initFileNameInDir(Common.WORKDIR,"failedBoard.txt"), "a");
 				    file.write(str(finalBoard)+"\n\n");
 				    file.close();
 				except IOError:
@@ -239,21 +238,11 @@ def initFinalBoard():
 	#####################################
 	return finalBoard;
 
-def initFileNameInDir(dirName,fileName):
-	if platform.system() == 'Darwin':
-		return dirName+"/"+fileName;
-	return dirName+"\\"+fileName;
-
 # initFinalBoard();
 def main(argv):
+	Common.initConstValues(argv);
 	time0 = time.time();
-	print(argv[0]);
-	global worktDir_;
-	worktDir_ = os.path.dirname(argv[0]);
-	# outputFile = worktDir_+"\\"+"finalBoard.txt";
-	# if platform.system() == 'Darwin':
-	# 	outputFile = worktDir_+"/"+"finalBoard.txt";
-	outputFile = initFileNameInDir(worktDir_,"finalBoard.txt");
+	outputFile = Common.initFileNameInDir(Common.WORKDIR,"finalBoard.txt");
 	file = open(outputFile, "w+");
 	for counter in range(0,30):
 		print(counter);

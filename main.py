@@ -3,11 +3,14 @@
 import os
 import sys
 import GameLogicManager as GM
+import Common
 
 def main(argv):
-	worktDir = os.path.dirname(argv[0]);
+	Common.initConstValues(argv);
+
+
 	manager = GM.GameLogicManager.getManager();
-	manager.initEnv(worktDir);
+	manager.initEnv();
 	manager.initStaticLayout();
 	manager.startMainLoop();
 
