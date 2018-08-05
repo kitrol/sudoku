@@ -50,7 +50,7 @@ class GameLogicManager(object):
 		##############
 
 		##########TEST##########
-		self.onLevelAccomplished({'a':123,'b':456});
+		# self.onLevelAccomplished({'a':123,'b':456});
 		##########TEST##########
 
 	def startMainLoop(self):
