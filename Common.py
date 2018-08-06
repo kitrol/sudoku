@@ -7,6 +7,12 @@ WORKDIR = None;
 SCREEN_SIZE = (600,400);
 DISPLAY = None;
 
+
+# TOUCH_PRIORITY
+
+TOUCH_PRIORITY_POPUP = -100;
+
+TOUCH_PRIORITY_PLAY = 0
 def initFileNameInDir(dirName,fileName):
 	if platform.system() == 'Darwin':
 		return dirName+"/"+fileName;

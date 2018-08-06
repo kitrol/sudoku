@@ -7,6 +7,7 @@ import pygame as pg
 import platform
 import random
 import math
+import traceback
 
 GAME_EVENT = (
 	"GAME_EVENT_INPUT_NUM",
@@ -40,11 +41,13 @@ class GameEventBroadcaster():
 				self.messageItems_.remove(message);
 		self.FailureMessageItems_ = [];
 	def envokeEvent(self,messageType,data):
+		print("envokeEvent "+str(len(self.messageItems_)));
 		for message in self.messageItems_:
 			if message.messageType_ == messageType:
 				try:
 					message.func_(data);
 				except Exception as e:
+					traceback.print_exc();
 					self.FailureMessageItems_.append(message);
 		self.removeFailureMessage();	
 	def regeistMessage(self,message):

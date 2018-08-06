@@ -14,12 +14,6 @@ BG_COLOR = (244,244,244,125);
 DARK_COLOR = (220,230,235,125);
 SELECT_COLOR = (200,200,200,125);
 ONANIMATION = False;
-
-# def initFileNameInDir(dirName,fileName):
-# 	if platform.system() == 'Darwin':
-# 		return dirName+"/"+fileName;
-# 	return dirName+"\\"+fileName;
-	
 	
 class NumberBoard(MD.MouseEventDelegate,object):
 	hardness = ((41,50),(51,53),(54,58),(59,60));
@@ -28,7 +22,7 @@ class NumberBoard(MD.MouseEventDelegate,object):
 	BLACK = (0,0,0);
 
 	def __init__(self, display, finalBoard, level):
-		super(MD.MouseEventDelegate, self).__init__();
+		super(NumberBoard, self).__init__();
 		self.display_ = display;
 		self.finalBoard_ = finalBoard;
 		self.testBoard_ = np.array(finalBoard);
@@ -37,6 +31,7 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		self.start_X = 0;
 		self.start_Y = 0;
 		self.offset = 0;
+		self.emptyCeils_ = 0;
 		self.selected_coordinate = (-1,-1);
 		self.createEmptyArray();
 		self.numberSurface_ = None;
@@ -48,9 +43,9 @@ class NumberBoard(MD.MouseEventDelegate,object):
 	
 	def createEmptyArray(self):
 		hardNessLevel = NumberBoard.hardness[self.level_];
-		hardNess = random.randint(hardNessLevel[0]-1,hardNessLevel[1]+1);
+		self.emptyCeils_ = random.randint(hardNessLevel[0]-1,hardNessLevel[1]+1);
 		emptyNumArray = [0,0,0,0,0,0,0,0,0];
-		each = math.ceil(hardNess/9);
+		each = math.ceil(self.emptyCeils_/9);
 		for x in range(0,9):
 			emptyNumArray[x] = random.randint(each-2,each+2);
 		while sum(emptyNumArray)<hardNessLevel[0]:
@@ -75,6 +70,7 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		BLACK = NumberBoard.BLACK;
 		normal_line_size = NumberBoard.normal_line_size;
 		bold_line_size = NumberBoard.bold_line_size;
+		self.setRect((start_X,start_Y,offset*9,offset*9));
 		self.start_X = start_X;
 		self.start_Y = start_Y;
 		self.offset = offset;
@@ -156,7 +152,7 @@ class NumberBoard(MD.MouseEventDelegate,object):
 			self.tryBoard_[line,column] = int(data);
 			self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
 			count = self.getFilledNums();
-			self.progressBar_.setPercent(count/81);
+			self.progressBar_.setPercent(float(count)/81);
 			self.checkIsNumFinish(int(data));
 			self.checkFinish();
 		else:
@@ -197,8 +193,12 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		for line in range(0,9):
 			if 0 in self.tryBoard_[line]:
 				return False;
-		# post notification when finished 
-		GB.GameEventBroadcaster.getControler().envokeEvent("GAME_EVENT_LEVEL_ACCOMPLISH",{"level":1,"timeCost":100});
+		# post notification when finished
+		def showFinish(data):
+			GB.GameEventBroadcaster.getControler().envokeEvent("GAME_EVENT_LEVEL_ACCOMPLISH",{"level":1,"timeCost":100});
+		callbackEvent = TC.TimeEvent("TET_Callback",0.5,self,showFinish,callbackData=(1,2));
+		timeEventController = TC.TimeEventController.getControler();
+		timeEventController.regeistEvent(callbackEvent);
 
 	def mouseLeftClickStart(self,mouse):
 		pass;
@@ -222,18 +222,28 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		column = int(math.floor((self.STARTPOS[0]-self.start_X)/self.offset));
 		line = int(math.floor((self.STARTPOS[1]-self.start_Y)/self.offset));
 		self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
-
+	def autoMark(self,leftCount):
+		emptyCeils = self.emptyCeils_;
+		for line in range(0,9):
+			for column in range(0,9):
+				if self.tryBoard_[line,column] == 0:
+		 			self.selected_coordinate = (line,column);
+		 			self.onUpdateNum(self.finalBoard_[line,column]);
+		 			emptyCeils -= 1;
+		 		if emptyCeils==leftCount:
+		 			return;
 
 class SideBoard(MD.MouseEventDelegate):
 	normal_line_size =2;
 	bold_line_size = 4;
 	BLACK = (0,0,0);
 	def __init__(self, display):
-		super(MD.MouseEventDelegate, self).__init__();
+		super(SideBoard, self).__init__();
 		self.display_ = display;
 		self.start_X = 0;
 		self.start_Y = 0;
 		self.offset = 0;
+		self.rect_ = (0,0,0,0);
 		self.finishedNums_ = [];
 		mouseControler = MD.MouseEventsDistributer.getControler();
 		mouseControler.regeistDelegate(self);
@@ -246,6 +256,7 @@ class SideBoard(MD.MouseEventDelegate):
 		self.start_X = start_X;
 		self.start_Y = start_Y;
 		self.offset = offset;
+		self.setRect((start_X,start_Y,offset*3,offset*3));
 		display = self.display_;
 		display.fill(DARK_COLOR,(start_X, start_Y,offset*3,offset*3));
 
@@ -280,7 +291,6 @@ class SideBoard(MD.MouseEventDelegate):
 			return False;
 		elif (self.STARTPOS[0]-self.start_X)>self.offset*3 or (self.STARTPOS[0]-self.start_X)<=0 or (self.STARTPOS[1]-self.start_Y)>self.offset*3 or (self.STARTPOS[1]-self.start_Y)<=0:
 			return False;
-
 		column = math.floor((self.STARTPOS[0]-self.start_X)/self.offset);
 		line = math.floor((self.STARTPOS[1]-self.start_Y)/self.offset);
 		num = int(line*3+column+1);

@@ -4,8 +4,9 @@ import numpy as np
 import os
 import sys
 import pygame as pg
+import traceback
 
-class TimeEvent:
+class TimeEvent(object):
 	def __init__(self,eventType,delayTime,target,callbackFunc,callbackData=None,repeatTime=1):
 		super(TimeEvent, self).__init__();
 		self.startTime_ = pg.time.get_ticks();
@@ -55,11 +56,11 @@ class TimeEventController(object):
 					else:
 						event.repeatTime_-=1;
 				except Exception as e:
+					traceback.print_exc();
 					self.FailureEventList_.append(event);
 		self.removeFailureEvent();
 
 	def regeistEvent(self,event):
-		print("regeistEvent");
 		if event not in self.eventList_:
 			self.eventList_.append(event);
 		print(len(self.eventList_));

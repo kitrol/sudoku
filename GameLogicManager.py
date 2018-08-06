@@ -8,6 +8,7 @@ import TimeEventController as TC
 import GameEventBroadcaster as GB
 import sudoku
 import Common
+from LevelSelectPopup import *
 
 import FinishLevelPopup as FLP
 
@@ -48,11 +49,25 @@ class GameLogicManager(object):
 		sideBoard = NB.SideBoard(display);
 		sideBoard.drwaSideBoard(400,60,30);
 		##############
+		self.addSettingBtn();
+		self.addNewGameBtn();
+
 
 		##########TEST##########
+		board.autoMark(2);
 		# self.onLevelAccomplished({'a':123,'b':456});
 		##########TEST##########
-
+	def showSettingPopup(self):
+		print("showSettingPopup");
+	def onNewGameClicked(self):
+		newPopup = LevelSelectPopup();
+		newPopup.popupShpw();
+	def addSettingBtn(self):
+		self.settingBtn_ = BB.ButtonBase("setting.png",Common.DISPLAY,self.showSettingPopup);
+		self.settingBtn_.showBtn((70,20));
+	def addNewGameBtn(self):
+		self.NewGameBtn_ = BB.ButtonBase("newGame.png",Common.DISPLAY,self.onNewGameClicked);
+		self.NewGameBtn_.showBtn((200,20));
 	def startMainLoop(self):
 		fpsClock = pg.time.Clock();
 		while True:

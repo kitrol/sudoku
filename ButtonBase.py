@@ -5,13 +5,13 @@ import MouseEventDelegate as MD
 import Common
 
 class ButtonBase(pg.sprite.Sprite,MD.MouseEventDelegate):
-	def __init__(self, normalImageName,parent,callback,callbackData=None,btnLabelStr=None):
+	def __init__(self, normalImageName,parent,callback,callbackData=None,btnLabelStr=None,priority=0):
 		super(ButtonBase, self).__init__()
 		bgFileName = Common.initFileNameInDir(Common.initFileNameInDir(Common.WORKDIR,"images"),normalImageName);
 		self.btn_ = pg.image.load(bgFileName);
 		self.btnLabelStr_ = btnLabelStr;
+		self.swallowTouch_ = True;
 		self.parent_ = parent;
-		self.rect_ = (0,0,0,0); # record the position of the button
 		self.isClicked_ = False;
 		self.btnCallback_ = callback;
 		self.callbackData_ = callbackData;
@@ -47,7 +47,7 @@ class ButtonBase(pg.sprite.Sprite,MD.MouseEventDelegate):
 	def showBtn(self,pos):
 		rectObj = self.btn_.get_rect();
 		rectObj.center = pos;
-		self.rect_ = rectObj;
+		self.setRect(rectObj);
 		self.parent_.blit(self.btn_,rectObj);
 	def mouseLeftClickStart(self,mouse):
 		if self.rect_.collidepoint(mouse.get_pos()):

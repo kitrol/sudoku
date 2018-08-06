@@ -1,19 +1,15 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-import numpy as np
-import os
-import sys
 import pygame as pg
-import platform
-import random
 import math
 
 
-class MouseEventsDistributer():
+class MouseEventsDistributer(object):
 	"""docstring for MouseEventsDistributer"""
 	Instance_ = None;
 	
 	def __init__(self):
+		super(MouseEventsDistributer, self).__init__();
 		self.delegateList_ = [];
 		self.FailureDelegates_ = [];
 	@classmethod
@@ -31,7 +27,7 @@ class MouseEventsDistributer():
 		
 	def regeistDelegate(self,delegate):
 		if delegate not in self.delegateList_:
-			self.delegateList_.append(delegate);
+			self.delegateList_.insert(0,delegate);
 	def unregistDelegate(self,oldDelegate):
 		if oldDelegate in self.delegateList_:
 			self.delegateList_.remove(oldDelegate);
@@ -39,14 +35,20 @@ class MouseEventsDistributer():
 	def OnMouseClickStart(self,mouse,pressed_array):
 		for delegate in self.delegateList_:
 			if hasattr(delegate,"mouseClickStart"):
-				delegate.mouseClickStart(mouse,pressed_array);
+				if delegate.rect_.collidepoint(mouse.get_pos()):
+					delegate.mouseClickStart(mouse,pressed_array);
+					if delegate.swallowTouch_:
+						return;
 			else:
 				self.FailureDelegates_.append(delegate);
 			
 	def OnMouseMove(self,mouse):
 		for delegate in self.delegateList_:
 			if hasattr(delegate,"onMouseMove"):
-				delegate.onMouseMove(mouse);
+				if delegate.rect_.collidepoint(mouse.get_pos()):
+					delegate.onMouseMove(mouse);
+					if delegate.swallowTouch_:
+						return;
 			else:
 				self.FailureDelegates_.append(delegate);
 		self.removeFailureDelegates();
@@ -54,7 +56,10 @@ class MouseEventsDistributer():
 	def OnMouseClickEnd(self,mouse):
 		for delegate in self.delegateList_:
 			if hasattr(delegate,"mouseClickEnd"):
-				delegate.mouseClickEnd(mouse);
+				if delegate.rect_.collidepoint(mouse.get_pos()):
+					delegate.mouseClickEnd(mouse);
+					if delegate.swallowTouch_:
+						return;
 			else:
 				self.FailureDelegates_.append(delegate);
 		self.removeFailureDelegates();
@@ -73,10 +78,19 @@ class MouseEventsDistributer():
 class MouseEventDelegate(object):
 	"""docstring for MouseEventDelegate"""
 	def __init__(self):
+		super(MouseEventDelegate, self).__init__();
 		self.LEFT_CLICK = False;
 		self.MID_CLICK = False;
 		self.RIGHT_CLICK = False;
 		self.STARTPOS = None;
+		self.swallowTouch_ = True;
+		# IMPORTANT sub class should set the enable click region before showed
+		# IMPORTANT sub class should set the enable click region before showed
+		# IMPORTANT sub class should set the enable click region before showed
+		self.rect_ = (0,0,0,0);
+		# IMPORTANT sub class should set the enable click region before showed
+		# IMPORTANT sub class should set the enable click region before showed
+		# IMPORTANT sub class should set the enable click region before showed
 	def mouseClickStart(self,mouse,pressed_array):
 		# print(pressed_array);
 		self.STARTPOS = mouse.get_pos();
@@ -90,11 +104,14 @@ class MouseEventDelegate(object):
 		elif pressed_array[2]:
 			self.RIGHT_CLICK = True;
 			self.mouseRightClickStart(mouse);
+
+	def setRect(self,newRect):
+		self.rect_ = pg.Rect(newRect);
 	# delegate onMouseMove
 	def onMouseMove(self,mouse):
 		pass;
 	def mouseClickEnd(self,mouse):
-		if self.STARTPOS == None:
+		if not hasattr(self,"STARTPOS"):
 			return False;
 		endPos = mouse.get_pos();
 		if self.LEFT_CLICK:

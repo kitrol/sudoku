@@ -4,8 +4,9 @@ import numpy as np
 import pygame as pg
 import Common
 import ButtonBase as BB
+import MouseEventDelegate as MD
 
-class PopupBase(pg.sprite.Sprite):
+class PopupBase(pg.sprite.Sprite,MD.MouseEventDelegate):
 	def __init__(self,bgFileName=None,closeFileName=None):
 		super(PopupBase, self).__init__();
 		self.formerScreen_ = Common.DISPLAY.copy();
@@ -14,10 +15,12 @@ class PopupBase(pg.sprite.Sprite):
 		self.bgFileName_ = bgFileName;
 		self.closeFileName_ = closeFileName;
 		self.imageDir_ = Common.initFileNameInDir(Common.WORKDIR,"images");
+
 		self.initBg();
 		self.initTitle();
 		self.initContent();
 		self.initBtns();
+		self.setRect((0,0,Common.SCREEN_SIZE[0],Common.SCREEN_SIZE[1]));
 
 	def initBg(self):
 		DefaultBgFileName_ = Common.initFileNameInDir(self.imageDir_,"popupBg.png");
