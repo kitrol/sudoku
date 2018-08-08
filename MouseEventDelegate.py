@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 import pygame as pg
 import math
+from DestroyableNode import *
 
 
 class MouseEventsDistributer(object):
@@ -27,6 +28,8 @@ class MouseEventsDistributer(object):
 		
 	def regeistDelegate(self,delegate):
 		if delegate not in self.delegateList_:
+			# new added delegate always on the top of the array
+			# when mouse event happend first be actived
 			self.delegateList_.insert(0,delegate);
 	def unregistDelegate(self,oldDelegate):
 		if oldDelegate in self.delegateList_:
@@ -34,34 +37,39 @@ class MouseEventsDistributer(object):
 
 	def OnMouseClickStart(self,mouse,pressed_array):
 		for delegate in self.delegateList_:
-			if hasattr(delegate,"mouseClickStart"):
-				if delegate.rect_.collidepoint(mouse.get_pos()):
+			# if delegate.__class__.__name__ == "SideBoard":
+			# 	print(delegate.rect_);
+			# 	print(mouse.get_pos());
+			# print("CLASS NAME "+delegate.__class__.__name__);
+			if delegate.destroyed() or not hasattr(delegate,"mouseClickStart"):
+				self.FailureDelegates_.append(delegate);
+			else:
+				if delegate.enableTouch_ and delegate.rect_.collidepoint(mouse.get_pos()):
+					print("CLASS NAME "+delegate.__class__.__name__);
 					delegate.mouseClickStart(mouse,pressed_array);
 					if delegate.swallowTouch_:
 						return;
-			else:
-				self.FailureDelegates_.append(delegate);
 			
 	def OnMouseMove(self,mouse):
 		for delegate in self.delegateList_:
-			if hasattr(delegate,"onMouseMove"):
-				if delegate.rect_.collidepoint(mouse.get_pos()):
-					delegate.onMouseMove(mouse);
-					if delegate.swallowTouch_:
-						return;
-			else:
+			if delegate.destroyed() or not hasattr(delegate,"onMouseMove"):
 				self.FailureDelegates_.append(delegate);
+			elif delegate.enableTouch_ and hasattr(delegate,"STARTPOS") and delegate.STARTPOS!=(-1,-1):
+				delegate.onMouseMove(mouse);
+				print("CLASS NAME "+delegate.__class__.__name__);
+				print(isinstance(delegate,MouseEventDelegate));
+				if delegate.swallowTouch_:
+					return;
 		self.removeFailureDelegates();
 
 	def OnMouseClickEnd(self,mouse):
 		for delegate in self.delegateList_:
-			if hasattr(delegate,"mouseClickEnd"):
-				if delegate.rect_.collidepoint(mouse.get_pos()):
-					delegate.mouseClickEnd(mouse);
-					if delegate.swallowTouch_:
-						return;
-			else:
+			if delegate.destroyed() or not hasattr(delegate,"mouseClickEnd"):
 				self.FailureDelegates_.append(delegate);
+			elif delegate.enableTouch_ and hasattr(delegate,"STARTPOS") and delegate.STARTPOS!=(-1,-1):
+				delegate.mouseClickEnd(mouse);
+				if delegate.swallowTouch_:
+					return;
 		self.removeFailureDelegates();
 
 	def dealMouseEvents(self,event):
@@ -75,15 +83,16 @@ class MouseEventsDistributer(object):
 		self.removeFailureDelegates();	
 
 
-class MouseEventDelegate(object):
+class MouseEventDelegate(DestroyableNode):
 	"""docstring for MouseEventDelegate"""
 	def __init__(self):
 		super(MouseEventDelegate, self).__init__();
 		self.LEFT_CLICK = False;
 		self.MID_CLICK = False;
 		self.RIGHT_CLICK = False;
-		self.STARTPOS = None;
+		self.STARTPOS = (-1,-1);
 		self.swallowTouch_ = True;
+		self.enableTouch_ = True;
 		# IMPORTANT sub class should set the enable click region before showed
 		# IMPORTANT sub class should set the enable click region before showed
 		# IMPORTANT sub class should set the enable click region before showed
@@ -107,22 +116,29 @@ class MouseEventDelegate(object):
 
 	def setRect(self,newRect):
 		self.rect_ = pg.Rect(newRect);
+
+	def destroy(self):
+		DestroyableNode.destroy(self);
+		self.enableTouch_ = False;
+		self.swallowTouch_ = False;
+		
 	# delegate onMouseMove
 	def onMouseMove(self,mouse):
 		pass;
-	def mouseClickEnd(self,mouse):
-		if not hasattr(self,"STARTPOS"):
+	def mouseClickEnd(self,mouse):	
+		if self.STARTPOS == (-1,-1):
 			return False;
 		endPos = mouse.get_pos();
 		if self.LEFT_CLICK:
 			self.mouseLeftClickEnd(mouse);
+			self.LEFT_CLICK = False;
 		elif self.MID_CLICK:
 			self.mouseMidClickEnd(mouse);
+			self.MID_CLICK = False;
 		else:
 			self.mouseRightClickEnd(mouse);
-		self.LEFT_CLICK = False;
-		self.MID_CLICK = False;
-		self.RIGHT_CLICK = False;
+			self.RIGHT_CLICK = False;
+		self.STARTPOS = (-1,-1);
 		
 		if math.sqrt((endPos[1]-self.STARTPOS[1])**2+(endPos[0]-self.STARTPOS[0])**2)> 20:
 			return False;

@@ -8,6 +8,7 @@ import MouseEventDelegate as MD
 import GameEventBroadcaster as GB
 import TimeEventController as TC
 import PixelProgressBar as PPG
+from DestroyableNode import *
 import Common
 
 BG_COLOR = (244,244,244,125);
@@ -122,8 +123,12 @@ class NumberBoard(MD.MouseEventDelegate,object):
 					fontObj.set_bold(isBold);
 					textSurfaceObj = fontObj.render(str(num), True, color);
 					textRectObj = textSurfaceObj.get_rect();
+					center = (start_X+column*offset+offset/2, start_Y+line*offset+offset/2+2);
+					setattr(textRectObj,"center",center);
 
-					textRectObj.center = (start_X+column*offset+offset/2, start_Y+line*offset+offset/2+2);
+					
+					# textRectObj.center = (start_X+column*offset+offset/2, start_Y+line*offset+offset/2+2);
+					# print(textRectObj.center);
 					display.blit(textSurfaceObj,textRectObj);
 		# add progress bar
 		# width,height,bgColor,barColor,percent,
@@ -184,7 +189,6 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		for num in tempArray:
 			if num == targetNum:
 				counter += 1;
-		print("checkIsNumFinish targetNum %d cnt %d"%(targetNum,counter));
 		if counter>=9:
 			broadcaster = GB.GameEventBroadcaster.getControler();
 			broadcaster.envokeEvent("GAME_EVENT_NUM_FULL",targetNum);
@@ -196,7 +200,7 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		# post notification when finished
 		def showFinish(data):
 			GB.GameEventBroadcaster.getControler().envokeEvent("GAME_EVENT_LEVEL_ACCOMPLISH",{"level":1,"timeCost":100});
-		callbackEvent = TC.TimeEvent("TET_Callback",0.5,self,showFinish,callbackData=(1,2));
+		callbackEvent = TC.TimeEvent("TET_Callback",1.0,self,showFinish,callbackData=(1,2));
 		timeEventController = TC.TimeEventController.getControler();
 		timeEventController.regeistEvent(callbackEvent);
 
@@ -222,23 +226,25 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		column = int(math.floor((self.STARTPOS[0]-self.start_X)/self.offset));
 		line = int(math.floor((self.STARTPOS[1]-self.start_Y)/self.offset));
 		self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
+
 	def autoMark(self,leftCount):
 		emptyCeils = self.emptyCeils_;
 		for line in range(0,9):
 			for column in range(0,9):
 				if self.tryBoard_[line,column] == 0:
 		 			self.selected_coordinate = (line,column);
+		 			# self.tryBoard_[line,column] = self.finalBoard_[line,column];
 		 			self.onUpdateNum(self.finalBoard_[line,column]);
 		 			emptyCeils -= 1;
-		 		if emptyCeils==leftCount:
-		 			return;
+		 			if emptyCeils==leftCount:
+		 				return emptyCeils;
 
 class SideBoard(MD.MouseEventDelegate):
 	normal_line_size =2;
 	bold_line_size = 4;
 	BLACK = (0,0,0);
 	def __init__(self, display):
-		super(SideBoard, self).__init__();
+		MD.MouseEventDelegate.__init__(self);
 		self.display_ = display;
 		self.start_X = 0;
 		self.start_Y = 0;

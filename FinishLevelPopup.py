@@ -8,7 +8,8 @@ import ButtonBase as BB
 
 class FinishLevelPopup(PB.PopupBase):
 	def __init__(self,):
-		super(FinishLevelPopup, self).__init__();
+		super(FinishLevelPopup,self).__init__();
+		
 		
 	def initTitle(self):
 		titleDir = Common.initFileNameInDir(self.imageDir_,"congratulations.png");
@@ -20,8 +21,8 @@ class FinishLevelPopup(PB.PopupBase):
 	def initBtns(self):
 		PB.PopupBase.initBtns(self);
 		# (self, normalImageName,parent,callback,callbackData=None,btnLabelStr=None):
-		self.quitBtn_ = BB.ButtonBase("btn_1.png",self.background_,self.onCloseClicked,btnLabelStr="CLOSE");
-		self.quitBtn_.showBtn((250,300));
+		self.quitBtn_ = BB.ButtonBase("btn_1.png",self.onCloseClicked,btnLabelStr="CLOSE");
+		self.addChildNode(self,self.quitBtn_,(250,300),"center");
 		# self.background_.blit(self.quitBtn_,(20,20));
 
 	def initContent(self):
@@ -31,4 +32,5 @@ class FinishLevelPopup(PB.PopupBase):
 		textRectObj = textSurfaceObj.get_rect();
 		textRectObj.center = (300, 220);
 		self.background_.blit(textSurfaceObj,textRectObj);
+
 		

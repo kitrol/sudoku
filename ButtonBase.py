@@ -4,14 +4,19 @@ import pygame as pg
 import MouseEventDelegate as MD
 import Common
 
-class ButtonBase(pg.sprite.Sprite,MD.MouseEventDelegate):
-	def __init__(self, normalImageName,parent,callback,callbackData=None,btnLabelStr=None,priority=0):
-		super(ButtonBase, self).__init__()
+class ButtonBase(pg.Surface,MD.MouseEventDelegate):
+	def __init__(self,normalImageName,callback,callbackData=None,btnLabelStr=None):
+
 		bgFileName = Common.initFileNameInDir(Common.initFileNameInDir(Common.WORKDIR,"images"),normalImageName);
-		self.btn_ = pg.image.load(bgFileName);
+		bgImage = pg.image.load(bgFileName);
+		imageRect = bgImage.get_rect();
+		pg.Surface.__init__(self,(imageRect.width,imageRect.height),pg.SRCALPHA, 32);
+		self.convert_alpha();
+		self.blit(bgImage,imageRect);
+		MD.MouseEventDelegate.__init__(self);
+
 		self.btnLabelStr_ = btnLabelStr;
 		self.swallowTouch_ = True;
-		self.parent_ = parent;
 		self.isClicked_ = False;
 		self.btnCallback_ = callback;
 		self.callbackData_ = callbackData;
@@ -24,10 +29,10 @@ class ButtonBase(pg.sprite.Sprite,MD.MouseEventDelegate):
 			fontFile = Common.initFileNameInDir(Common.initFileNameInDir(Common.WORKDIR,"fonts"),"Assimilate.TTF");
 			fontObj = pg.font.Font(fontFile, 24);
 			textSurfaceObj = fontObj.render(str(self.btnLabelStr_), True, color);
-			parentRect = self.btn_.get_rect();
+			parentRect = self.get_rect();
 			textRectObj = textSurfaceObj.get_rect();
 			textRectObj.center = (parentRect[2]/2,parentRect[3]/2);
-			self.btn_.blit(textSurfaceObj,textRectObj);
+			self.blit(textSurfaceObj,textRectObj);
 	# delegate for clickevent
 	def mouseLeftClickEnd(self,mouse):
 		if self.isClicked_:
@@ -36,19 +41,20 @@ class ButtonBase(pg.sprite.Sprite,MD.MouseEventDelegate):
 				print("ButtonBase mouseLeftClickEnd "+str(self.callbackData_));
 				self.btnCallback_();
 			except Exception as e:
+				import traceback
+				traceback.print_exc();
 				print("Button Call back Failed "+str(e));
 		self.isClicked_ = False;
-		
 
 	def regeistMouseEvent(self):
 		mouseControler = MD.MouseEventsDistributer.getControler();
 		mouseControler.regeistDelegate(self);
 
-	def showBtn(self,pos):
-		rectObj = self.btn_.get_rect();
+	def showBtn(self,parentNode,pos):
+		rectObj = self.get_rect();
 		rectObj.center = pos;
 		self.setRect(rectObj);
-		self.parent_.blit(self.btn_,rectObj);
+		parentNode.blit(self,rectObj);
 	def mouseLeftClickStart(self,mouse):
 		if self.rect_.collidepoint(mouse.get_pos()):
 			self.isClicked_ = True;

@@ -54,7 +54,7 @@ class GameLogicManager(object):
 
 
 		##########TEST##########
-		board.autoMark(2);
+		# board.autoMark(2);
 		# self.onLevelAccomplished({'a':123,'b':456});
 		##########TEST##########
 	def showSettingPopup(self):
@@ -63,11 +63,11 @@ class GameLogicManager(object):
 		newPopup = LevelSelectPopup();
 		newPopup.popupShpw();
 	def addSettingBtn(self):
-		self.settingBtn_ = BB.ButtonBase("setting.png",Common.DISPLAY,self.showSettingPopup);
-		self.settingBtn_.showBtn((70,20));
+		self.settingBtn_ = BB.ButtonBase("setting.png",self.showSettingPopup);
+		self.settingBtn_.showBtn(Common.DISPLAY,(70,20));
 	def addNewGameBtn(self):
-		self.NewGameBtn_ = BB.ButtonBase("newGame.png",Common.DISPLAY,self.onNewGameClicked);
-		self.NewGameBtn_.showBtn((200,20));
+		self.NewGameBtn_ = BB.ButtonBase("newGame.png",self.onNewGameClicked);
+		self.NewGameBtn_.showBtn(Common.DISPLAY,(200,20));
 	def startMainLoop(self):
 		fpsClock = pg.time.Clock();
 		while True:
