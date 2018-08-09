@@ -27,6 +27,7 @@ def main(argv):
 	manager = GM.GameLogicManager.getManager();
 	manager.initEnv();
 	manager.initStaticLayout();
+	manager.initDynamicLayout();
 	manager.startMainLoop();
 
 if __name__ == '__main__':

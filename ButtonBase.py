@@ -38,12 +38,14 @@ class ButtonBase(pg.Surface,MD.MouseEventDelegate):
 		if self.isClicked_:
 			print("ButtonBase::mouseLeftClickEnd "+str(mouse.get_pos()));
 			try:
-				print("ButtonBase mouseLeftClickEnd "+str(self.callbackData_));
-				self.btnCallback_();
+				if self.callbackData_:
+					self.btnCallback_(self.callbackData_);
+				else:
+					self.btnCallback_();
 			except Exception as e:
 				import traceback
 				traceback.print_exc();
-				print("Button Call back Failed "+str(e));
+				print("Button Call back Failed: "+str(e));
 		self.isClicked_ = False;
 
 	def regeistMouseEvent(self):

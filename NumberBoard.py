@@ -8,12 +8,10 @@ import MouseEventDelegate as MD
 import GameEventBroadcaster as GB
 import TimeEventController as TC
 import PixelProgressBar as PPG
+import TipPopup as TP
 from DestroyableNode import *
 import Common
 
-BG_COLOR = (244,244,244,125);
-DARK_COLOR = (220,230,235,125);
-SELECT_COLOR = (200,200,200,125);
 ONANIMATION = False;
 	
 class NumberBoard(MD.MouseEventDelegate,object):
@@ -33,16 +31,19 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		self.start_Y = 0;
 		self.offset = 0;
 		self.emptyCeils_ = 0;
+		self.mistakeCnt_ = 0;
+		self.tipUsed_ = 0;
 		self.selected_coordinate = (-1,-1);
-		self.createEmptyArray();
+		self.GenerateTestBoard();
 		self.numberSurface_ = None;
 		self.progressBar_ = None;
 		mouseControler = MD.MouseEventsDistributer.getControler();
 		mouseControler.regeistDelegate(self);
 		broadcaster = GB.GameEventBroadcaster.getControler();
 		broadcaster.regeistMessage(GB.BoundMessage("GAME_EVENT_INPUT_NUM",self,self.onUpdateNum));
+		broadcaster.regeistMessage(GB.BoundMessage("GAME_EVENT_CANCLE_SELECT_CELL",self,self.resetSelect));
 	
-	def createEmptyArray(self):
+	def GenerateTestBoard(self):
 		hardNessLevel = NumberBoard.hardness[self.level_];
 		self.emptyCeils_ = random.randint(hardNessLevel[0]-1,hardNessLevel[1]+1);
 		emptyNumArray = [0,0,0,0,0,0,0,0,0];
@@ -81,14 +82,13 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		self.numberSurface_ = pg.Surface((offset*9,offset*9));
 		self.numberSurface_.fill((244,244,244,125));
 		for column in range(4,7):
-			global DARK_COLOR;
-			self.numberSurface_.fill(DARK_COLOR,(0, (column-1)*offset,offset*9,offset));
-			self.numberSurface_.fill(DARK_COLOR,((column-1)*offset, 0,offset,offset*9));
+			self.numberSurface_.fill(Common.DARK_COLOR,(0, (column-1)*offset,offset*9,offset));
+			self.numberSurface_.fill(Common.DARK_COLOR,((column-1)*offset, 0,offset,offset*9));
 
 		if selected_line >=0 and selected_column>=0:
 			selected_num = self.tryBoard_[selected_line,selected_column];
-			self.numberSurface_.fill(SELECT_COLOR,(0, selected_line*self.offset,self.offset*9,self.offset));
-			self.numberSurface_.fill(SELECT_COLOR,(selected_column*self.offset, 0,self.offset,self.offset*9));
+			self.numberSurface_.fill(Common.SELECT_COLOR,(0, selected_line*self.offset,self.offset*9,self.offset));
+			self.numberSurface_.fill(Common.SELECT_COLOR,(selected_column*self.offset, 0,self.offset,self.offset*9));
 			# if self.testBoard_[selected_line][selected_column] > 0:
 			# 	return False;
 			if self.testBoard_[selected_line][selected_column]==0:
@@ -125,15 +125,11 @@ class NumberBoard(MD.MouseEventDelegate,object):
 					textRectObj = textSurfaceObj.get_rect();
 					center = (start_X+column*offset+offset/2, start_Y+line*offset+offset/2+2);
 					setattr(textRectObj,"center",center);
-
-					
-					# textRectObj.center = (start_X+column*offset+offset/2, start_Y+line*offset+offset/2+2);
-					# print(textRectObj.center);
 					display.blit(textSurfaceObj,textRectObj);
 		# add progress bar
 		# width,height,bgColor,barColor,percent,
-		count = self.getFilledNums();
-		self.progressBar_ = PPG.PixelProgressBar(270,10,(150,150,150),(0,0,0),float(count)/81);
+		self.emptyCeils_ = self.getFilledNums();
+		self.progressBar_ = PPG.PixelProgressBar(270,10,(150,150,150),(0,0,0),float(self.emptyCeils_)/81);
 		self.progressBar_.drawProgressBar(display,60,350);
 
 	def getFilledNums(self):
@@ -156,25 +152,55 @@ class NumberBoard(MD.MouseEventDelegate,object):
 			# FILL IN A RIGHT NUMBER
 			self.tryBoard_[line,column] = int(data);
 			self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
-			count = self.getFilledNums();
-			self.progressBar_.setPercent(float(count)/81);
+			self.progressBar_.setPercent(float(self.emptyCeils_)/81);
 			self.checkIsNumFinish(int(data));
 			self.checkFinish();
 		else:
 			# FILL IN A WRONG NUMBER
 			self.drawGuessWrong(line,column,int(data));
+
 	def restStatus(self,data):
 		global ONANIMATION;
 		ONANIMATION = False;
 		self.drawBoard(self.start_X,self.start_Y,self.offset,data[0],data[1]);
 
+	def resetSelect(self):
+		self.drawBoard(self.start_X,self.start_Y,self.offset);
+		self.selected_coordinate = (-1,-1);
+
+	def restartLevel(self):
+		self.mistakeCnt_ = 0;
+		self.tryBoard_ = np.array(self.testBoard_);
+		self.drawBoard(self.start_X,self.start_Y,self.offset);
+
+	def useTip(self):
+		if self.selected_coordinate == (-1,-1):
+			newPopup = TP.TipPopup("Selected an Empty Cell to Use Tip");
+			newPopup.popupShpw();
+			return;
+		if self.tipUsed_>=Common.TIPS_MAX:
+			newPopup = TP.TipPopup("Already use tips %d"%(Common.TIPS_MAX));
+			newPopup.popupShpw();
+			return;
+		self.tipUsed_ += 1;
+		answer = self.finalBoard_[self.selected_coordinate[0],self.selected_coordinate[1]]
+		self.tryBoard_[self.selected_coordinate[0],self.selected_coordinate[1]] = answer;
+		self.drawBoard(self.start_X,self.start_Y,self.offset);
+
+
 	def drawGuessWrong(self,line,column,num):
+		self.mistakeCnt_ += 1;
+		broadcaster = GB.GameEventBroadcaster.getControler();
+		broadcaster.envokeEvent("GAME_EVENT_MISTAKE",self.mistakeCnt_);
+
+		######   DRAW A FAKE NUMBER HERE  #######
 		global fontFile;
 		fontObj = pg.font.Font(fontFile, 24);
 		textSurfaceObj = fontObj.render(str(num), True, (255,0,0));
 		textRectObj = textSurfaceObj.get_rect();
 		textRectObj.center = (self.start_X+column*self.offset+self.offset/2, self.start_Y+line*self.offset+self.offset/2+2);
 		self.display_.blit(textSurfaceObj,textRectObj);
+		######   GO BACK TO UNFILLED NUMBER STATE  #######
 		global ONANIMATION;
 		ONANIMATION = True;
 		timeEventController = TC.TimeEventController.getControler();
@@ -216,6 +242,7 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		pass;
 
 	def mouseLeftClickEnd(self,mouse):
+		print("numberboard mouseLeftClickEnd");
 		endPos = mouse.get_pos();
 		if math.sqrt((endPos[1]-self.STARTPOS[1])**2+(endPos[0]-self.STARTPOS[0])**2)> 20:
 			return False;
@@ -226,6 +253,7 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		column = int(math.floor((self.STARTPOS[0]-self.start_X)/self.offset));
 		line = int(math.floor((self.STARTPOS[1]-self.start_Y)/self.offset));
 		self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
+		print("numberboard mouseLeftClickEnd %d %d "%(line,column));
 
 	def autoMark(self,leftCount):
 		emptyCeils = self.emptyCeils_;
@@ -238,6 +266,10 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		 			emptyCeils -= 1;
 		 			if emptyCeils==leftCount:
 		 				return emptyCeils;
+
+	def destory():
+		MD.MouseEventDelegate.destory(self);
+		self.progressBar_.destory();
 
 class SideBoard(MD.MouseEventDelegate):
 	normal_line_size =2;
@@ -256,6 +288,7 @@ class SideBoard(MD.MouseEventDelegate):
 		broadcaster = GB.GameEventBroadcaster.getControler();
 		broadcaster.regeistMessage(GB.BoundMessage("GAME_EVENT_NUM_FULL",self,self.deleteFullNum));
 
+
 	def drwaSideBoard(self,start_X,start_Y,offset):
 		fontObj = pg.font.Font(fontFile, 25);
 		BLACK = self.BLACK;
@@ -264,7 +297,7 @@ class SideBoard(MD.MouseEventDelegate):
 		self.offset = offset;
 		self.setRect((start_X,start_Y,offset*3,offset*3));
 		display = self.display_;
-		display.fill(DARK_COLOR,(start_X, start_Y,offset*3,offset*3));
+		display.fill(Common.DARK_COLOR,(start_X, start_Y,offset*3,offset*3));
 
 		for column in range(1,5):
 			lineSize = SideBoard.normal_line_size;

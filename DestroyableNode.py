@@ -2,6 +2,8 @@
 # -*- coding: UTF-8 -*-
 import numpy as np
 import pygame as pg
+import GameEventBroadcaster as GB
+import TimeEventController as TC
 
 class DestroyableNode(object):
 	# base class of all destroyable node
@@ -24,6 +26,8 @@ class DestroyableNode(object):
 		
 	def destroy(self):
 		self.__isDestroyed = True;
+		GB.GameEventBroadcaster.getControler().unregistTargetForEvent(self);
+		TC.TimeEventController.getControler().unregistEvent(self);
 		for item in self.childNodes_:
 			if isinstance(item,DestroyableNode):
 				item.destroy();

@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 import pygame as pg
+from DestroyableNode import *
 
 
-class PixelProgressBar(object):
+class PixelProgressBar(DestroyableNode):
 	def __init__(self, width,height,bgColor,barColor,percent,direction=0):
 		super(PixelProgressBar, self).__init__()
 		self.width_ = width;

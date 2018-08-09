@@ -8,12 +8,15 @@ import platform
 import random
 import math
 import traceback
+from DestroyableNode import *
 
 GAME_EVENT = (
 	"GAME_EVENT_INPUT_NUM",
 	"GAME_EVENT_DEL_NUM",
 	"GAME_EVENT_NUM_FULL",
 	"GAME_EVENT_LEVEL_ACCOMPLISH",
+	"GAME_EVENT_MISTAKE",
+	"GAME_EVENT_CANCLE_SELECT_CELL",
 	)
 class BoundMessage:
 	def __init__(self,messageType,target,func):
@@ -40,12 +43,16 @@ class GameEventBroadcaster():
 			if message in self.messageItems_:
 				self.messageItems_.remove(message);
 		self.FailureMessageItems_ = [];
-	def envokeEvent(self,messageType,data):
-		print("envokeEvent "+str(len(self.messageItems_)));
+	def envokeEvent(self,messageType,data=None):
 		for message in self.messageItems_:
-			if message.messageType_ == messageType:
+			if message.target_.destroyed():
+				self.FailureMessageItems_.append(message);
+			elif message.messageType_ == messageType:
 				try:
-					message.func_(data);
+					if data:
+						message.func_(data);
+					else:
+						message.func_();
 				except Exception as e:
 					traceback.print_exc();
 					self.FailureMessageItems_.append(message);
@@ -53,6 +60,14 @@ class GameEventBroadcaster():
 	def regeistMessage(self,message):
 		if message not in self.messageItems_:
 			self.messageItems_.append(message);
-	def unregistMessage(self,oldMessage):
-		if oldMessage in self.messageItems_:
-			self.messageItems_.remove(oldMessage);
+	def unregistTargetForEvent(self,target,messageType=None):
+		for message in self.messageItems_:
+			if messageType != None:
+				if (message.target_ == target) and (message.messageType_ == messageType) :
+					self.FailureMessageItems_.append(message);
+			else:
+				if (message.target_ == target):
+					self.FailureMessageItems_.append(message);
+		self.removeFailureMessage();
+					
+		

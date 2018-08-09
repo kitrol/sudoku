@@ -80,7 +80,7 @@ class MouseEventsDistributer(object):
 			self.OnMouseMove(pg.mouse);
 		elif event.type == pg.MOUSEBUTTONUP:
 			self.OnMouseClickEnd(pg.mouse);
-		self.removeFailureDelegates();	
+		self.removeFailureDelegates();
 
 
 class MouseEventDelegate(DestroyableNode):
@@ -119,6 +119,7 @@ class MouseEventDelegate(DestroyableNode):
 
 	def destroy(self):
 		DestroyableNode.destroy(self);
+		MouseEventsDistributer.getControler().unregistDelegate(self);
 		self.enableTouch_ = False;
 		self.swallowTouch_ = False;
 		

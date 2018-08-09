@@ -10,7 +10,6 @@ from DestroyableNode import *
 class PopupBase(pg.Surface,MD.MouseEventDelegate):
 	def __init__(self,bgFileName=None,closeFileName=None):
 		MD.MouseEventDelegate.__init__(self);
-
 		pg.Surface.__init__(self,(Common.SCREEN_SIZE[0],Common.SCREEN_SIZE[1]),pg.SRCALPHA, 32);
 		self.convert_alpha();
 		self.formerScreen_ = Common.DISPLAY.copy();
@@ -53,10 +52,14 @@ class PopupBase(pg.Surface,MD.MouseEventDelegate):
 		self.addChildNode(self,self.closeBtn_,(25,25),"center");
 	def initContent(self):
 		pass
+
 	def onCloseClicked(self):
+		print("onCloseClicked");
 		self.destroy();
+		print(str(self.destroyed()));
 		Common.DISPLAY.blit(self.formerScreen_,(0,0));
 		self.formerScreen_ = None;
+
 	def popupShpw(self):
 		Common.DISPLAY.blit(self,(0,0));
 		

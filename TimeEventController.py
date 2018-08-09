@@ -49,29 +49,37 @@ class TimeEventController(object):
 		currentTime = pg.time.get_ticks();
 		for event in self.eventList_:
 			if (currentTime-event.startTime_)/1000>=event.delayTime_:
-				try:
-					event.callbackFunc_(event.callbackData_);
-					if event.repeatTime_-1<=0:
-						self.FailureEventList_.append(event);
-					else:
-						event.repeatTime_-=1;
-				except Exception as e:
-					traceback.print_exc();
+				if event.target_.destroyed():
 					self.FailureEventList_.append(event);
+				else:
+					try:
+						event.callbackFunc_(event.callbackData_);
+						if event.repeatTime_-1<=0:
+							self.FailureEventList_.append(event);
+						else:
+							event.repeatTime_-=1;
+					except Exception as e:
+						traceback.print_exc();
+						self.FailureEventList_.append(event);
 		self.removeFailureEvent();
 
 	def regeistEvent(self,event):
 		if event not in self.eventList_:
 			self.eventList_.append(event);
-		print(len(self.eventList_));
+
 	def unregistEvent(self,target,eventType=None):
-		if event in self.eventList_:
-			if eventType!=None:
-				# remove one event for one target and one event type
-				if event.target == target and event.eventType_ == eventType:
-					self.eventList_.remove(oldEvent);
-				else:
-					# remove all event for one target
-					if event.target == target:
-						self.FailureEventList_.append(event);
+		for event in self.eventList_:
+			if eventType==None:
+				if event.target == target:
+					self.FailureEventList_.append(event);
+						# remove one event for one target and one event type
+			elif event.target == target and event.eventType_ == eventType:
+					self.FailureEventList_.append(event);
 			self.removeFailureEvent();
+
+
+
+
+
+
+

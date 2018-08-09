@@ -12,13 +12,10 @@ class LevelSelectPopup(PB.PopupBase):
 
 	def initBtns(self):
 		PB.PopupBase.initBtns(self);
-		def onLevelBtnClicked(data):
-			print("onLevelBtnClicked "+str(data));
-
-		levelStr = ("EASY","MID","HARD","HELL");
-		btnPos = [(200,180),(200,260),(400,180),(400,260)];
+		btnPos = [(200,220),(400,220),(200,300),(400,300)];
 		for level in range(0,4):
-			levelBtn = BB.ButtonBase("btn_1.png",self.onCloseClicked,callbackData=level,btnLabelStr=levelStr[level]);
+			btnLabelStr = Common.LEVELSTR[level];
+			levelBtn = BB.ButtonBase("btn_1.png",self.onLevelBtnClicked,callbackData={'level':level},btnLabelStr=btnLabelStr);
 			self.addChildNode(self,levelBtn,btnPos[level],"center");
 	
 	def initBg(self):
@@ -33,7 +30,14 @@ class LevelSelectPopup(PB.PopupBase):
 	def initContent(self):
 		fontFile = Common.initFileNameInDir(Common.initFileNameInDir(Common.WORKDIR,"fonts"),"Assimilate.TTF");
 		fontObj = pg.font.Font(fontFile, 46);
-		textSurfaceObj = fontObj.render("Level Clear", True, (0,0,0));
+		textSurfaceObj = fontObj.render("New Game", True, (0,0,0));
 		textRectObj = textSurfaceObj.get_rect();
-		textRectObj.center = (300, 220);
+		textRectObj.center = (300, 140);
 		self.blit(textSurfaceObj,textRectObj);
+
+	def onLevelBtnClicked(self,data):
+		print("onLevelBtnClicked "+str(data));
+		self.destroy();
+		import GameEventBroadcaster as GB
+		broadcaster = GB.GameEventBroadcaster.getControler();
+		broadcaster.envokeEvent("GAME_EVENT_NEW_GAME",data);
