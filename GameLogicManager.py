@@ -7,6 +7,7 @@ import MouseEventDelegate as MD
 import TimeEventController as TC
 import GameEventBroadcaster as GB
 import sudoku
+import SudokuFinalBoardGenerator
 import Common
 import ToturialPopup as TP
 from LevelSelectPopup import *
@@ -98,7 +99,7 @@ class GameLogicManager(MD.MouseEventDelegate):
 			print("LEVEL FAILED!");
 	
 	def initBoards(self,level):
-		finalBoard = sudoku.initFinalBoard();
+		finalBoard = SudokuFinalBoardGenerator.initFinalBoard();
 		print(str(finalBoard));
 		self.board_ = NB.NumberBoard(Common.DISPLAY,finalBoard,level);
 		self.board_.drawBoard(60,60,30);
