@@ -6,7 +6,6 @@ from DestroyableNode import *
 
 
 class MouseEventsDistributer(object):
-	"""docstring for MouseEventsDistributer"""
 	Instance_ = None;
 	
 	def __init__(self):
@@ -37,15 +36,11 @@ class MouseEventsDistributer(object):
 
 	def OnMouseClickStart(self,mouse,pressed_array):
 		for delegate in self.delegateList_:
-			# if delegate.__class__.__name__ == "SideBoard":
-			# 	print(delegate.rect_);
-			# 	print(mouse.get_pos());
-			# print("CLASS NAME "+delegate.__class__.__name__);
 			if delegate.destroyed() or not hasattr(delegate,"mouseClickStart"):
 				self.FailureDelegates_.append(delegate);
 			else:
 				if delegate.enableTouch_ and delegate.rect_.collidepoint(mouse.get_pos()):
-					print("CLASS NAME "+delegate.__class__.__name__);
+					# print("CLASS NAME "+delegate.__class__.__name__);
 					delegate.mouseClickStart(mouse,pressed_array);
 					if delegate.swallowTouch_:
 						return;
@@ -56,7 +51,7 @@ class MouseEventsDistributer(object):
 				self.FailureDelegates_.append(delegate);
 			elif delegate.enableTouch_ and hasattr(delegate,"STARTPOS") and delegate.STARTPOS!=(-1,-1):
 				delegate.onMouseMove(mouse);
-				print("CLASS NAME "+delegate.__class__.__name__);
+				# print("CLASS NAME "+delegate.__class__.__name__);
 				print(isinstance(delegate,MouseEventDelegate));
 				if delegate.swallowTouch_:
 					return;
@@ -143,7 +138,6 @@ class MouseEventDelegate(DestroyableNode):
 		
 		if math.sqrt((endPos[1]-self.STARTPOS[1])**2+(endPos[0]-self.STARTPOS[0])**2)> 20:
 			return False;
-		# print(mouse.get_pos());
 
 	# delegate for clickevent
 	def mouseLeftClickStart(self,mouse):

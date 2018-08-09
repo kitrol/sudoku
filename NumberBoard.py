@@ -204,7 +204,6 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		global ONANIMATION;
 		ONANIMATION = True;
 		timeEventController = TC.TimeEventController.getControler();
-		# eventType,delayTime,target,callbackFunc
 		callbackEvent = TC.TimeEvent("TET_Callback",2.0,self,self.restStatus,callbackData=(line,column));
 		timeEventController.regeistEvent(callbackEvent);
 		
@@ -242,7 +241,6 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		pass;
 
 	def mouseLeftClickEnd(self,mouse):
-		print("numberboard mouseLeftClickEnd");
 		endPos = mouse.get_pos();
 		if math.sqrt((endPos[1]-self.STARTPOS[1])**2+(endPos[0]-self.STARTPOS[0])**2)> 20:
 			return False;
@@ -253,7 +251,6 @@ class NumberBoard(MD.MouseEventDelegate,object):
 		column = int(math.floor((self.STARTPOS[0]-self.start_X)/self.offset));
 		line = int(math.floor((self.STARTPOS[1]-self.start_Y)/self.offset));
 		self.drawBoard(self.start_X,self.start_Y,self.offset,line,column);
-		print("numberboard mouseLeftClickEnd %d %d "%(line,column));
 
 	def autoMark(self,leftCount):
 		emptyCeils = self.emptyCeils_;

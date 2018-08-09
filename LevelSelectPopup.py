@@ -36,7 +36,6 @@ class LevelSelectPopup(PB.PopupBase):
 		self.blit(textSurfaceObj,textRectObj);
 
 	def onLevelBtnClicked(self,data):
-		print("onLevelBtnClicked "+str(data));
 		self.destroy();
 		import GameEventBroadcaster as GB
 		broadcaster = GB.GameEventBroadcaster.getControler();

@@ -22,7 +22,6 @@ class PixelProgressBar(DestroyableNode):
 		self.pos_y = pos_y;
 		self.parrent = parrent;
 		# draw progress bar bg
-		# parrent.fill(self.bgColor_,(pos_x, pos_y, pos_x+self.width_ ,pos_y+self.height_ ));
 		parrent.fill(self.bgColor_,(pos_x, pos_y, self.width_ ,self.height_ ));
 		offset_x = self.width_%0.1;
 		offset_y = self.height_%0.1;

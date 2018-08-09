@@ -7,7 +7,6 @@ import PopupBase as PB
 class TipPopup(PB.PopupBase):
 	def __init__(self,contentStr):
 		self.contentStr_ = contentStr;
-		print("TipPopup  "+self.contentStr_);
 		PB.PopupBase.__init__(self);
 	
 	def initBg(self):
@@ -17,7 +16,6 @@ class TipPopup(PB.PopupBase):
 		rectObj = backg2.get_rect();
 		rectObj.center = (300, 200);
 		self.blit(backg2,rectObj);
-
 
 	def initContent(self):
 		fontFile = Common.initFileNameInDir(Common.initFileNameInDir(Common.WORKDIR,"fonts"),"Anklepants.TTF");

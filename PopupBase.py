@@ -50,11 +50,11 @@ class PopupBase(pg.Surface,MD.MouseEventDelegate):
 		self.closeBtn_ = BB.ButtonBase("close.png",self.onCloseClicked);
 		# self.closeBtn_.showBtn((25,25));
 		self.addChildNode(self,self.closeBtn_,(25,25),"center");
+		
 	def initContent(self):
 		pass
 
 	def onCloseClicked(self):
-		print("onCloseClicked");
 		self.destroy();
 		print(str(self.destroyed()));
 		Common.DISPLAY.blit(self.formerScreen_,(0,0));

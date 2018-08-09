@@ -36,7 +36,6 @@ class ButtonBase(pg.Surface,MD.MouseEventDelegate):
 	# delegate for clickevent
 	def mouseLeftClickEnd(self,mouse):
 		if self.isClicked_:
-			print("ButtonBase::mouseLeftClickEnd "+str(mouse.get_pos()));
 			try:
 				if self.callbackData_:
 					self.btnCallback_(self.callbackData_);
